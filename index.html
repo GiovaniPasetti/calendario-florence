@@ -28,6 +28,11 @@
     .number { font-size:.83rem; color:var(--muted); }
     .booking { display:block; margin-top:6px; padding:4px 6px; border-radius:7px; background:var(--accent-soft); color:#244333; font-size:.78rem; font-weight:650; overflow-wrap:anywhere; }
     .legend { margin:14px 2px 0; color:var(--muted); font-size:.82rem; }
+    .legend details { border-top:1px solid var(--line); padding-top:12px; }
+    .legend summary { cursor:pointer; color:var(--accent); font-weight:650; }
+    .legend-items { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+    .legend-item { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--ink); font-size:.76rem; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
     .message { padding:20px; text-align:center; color:var(--muted); }
     .error { color:#9a3028; }
     footer { color:var(--muted); font-size:.78rem; text-align:center; margin-top:16px; }
@@ -65,7 +70,13 @@
     <div class="grid" id="calendar">
       <div class="message">Carregando calendário…</div>
     </div>
-    <p class="legend">Os apartamentos indicados correspondem às datas reservadas.</p>
+    <div class="legend">
+      <details>
+        <summary>Legenda das unidades (28 apartamentos + condomínio)</summary>
+        <div class="legend-items" id="legendItems"></div>
+      </details>
+      <p>As etiquetas coloridas identificam cada apartamento. A reserva do condomínio aparece como <strong>Cond.</strong>.</p>
+    </div>
   </section>
   <footer>As reservas são sincronizadas automaticamente.</footer>
 </main>
@@ -74,10 +85,44 @@
   const monthLabel = document.getElementById('monthLabel');
   const calendar = document.getElementById('calendar');
   const status = document.getElementById('status');
+  const legendItems = document.getElementById('legendItems');
   const weekdays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const today = new Date();
   let shown = new Date(today.getFullYear(), today.getMonth(), 1);
   let bookings = [];
+  const apartments = Array.from({length:7}, (_, floor) =>
+    Array.from({length:4}, (_, unit) => String((floor + 1) * 100 + unit + 1))
+  ).flat();
+  const colorFor = apartment => {
+    const value = String(apartment).trim();
+    if (value === '1000') return {background:'#f3e7c8', color:'#674b16', border:'#dfc98f'};
+    const index = apartments.indexOf(value);
+    const hue = index < 0 ? 210 : Math.round(index * 360 / apartments.length);
+    return {
+      background:`hsl(${hue} 72% 91%)`,
+      color:`hsl(${hue} 48% 27%)`,
+      border:`hsl(${hue} 45% 78%)`
+    };
+  };
+  function displayApartment(apartment) {
+    return String(apartment).trim() === '1000' ? 'Cond.' : `Apto. ${apartment}`;
+  }
+  function renderLegend() {
+    legendItems.innerHTML = '';
+    [...apartments, '1000'].forEach(apartment => {
+      const colors = colorFor(apartment);
+      const item = document.createElement('span');
+      item.className = 'legend-item';
+      const dot = document.createElement('span');
+      dot.className = 'legend-dot';
+      dot.style.background = colors.background;
+      dot.style.border = `1px solid ${colors.border}`;
+      const label = document.createElement('span');
+      label.textContent = apartment === '1000' ? 'Cond.' : apartment;
+      item.append(dot, label);
+      legendItems.appendChild(item);
+    });
+  }
 
   function parseDate(value) {
     if (!value) return null;
@@ -119,7 +164,11 @@
       (byDay.get(key(d)) || []).forEach(apartment => {
         const chip = document.createElement('span');
         chip.className='booking';
-        chip.textContent = `Apto. ${apartment}`;
+        const colors = colorFor(apartment);
+        chip.style.background = colors.background;
+        chip.style.color = colors.color;
+        chip.style.border = `1px solid ${colors.border}`;
+        chip.textContent = displayApartment(apartment);
         cell.appendChild(chip);
       });
       calendar.appendChild(cell);
@@ -145,6 +194,7 @@
   document.getElementById('prev').addEventListener('click', () => { shown.setMonth(shown.getMonth()-1); render(); });
   document.getElementById('next').addEventListener('click', () => { shown.setMonth(shown.getMonth()+1); render(); });
   document.getElementById('today').addEventListener('click', () => { shown = new Date(today.getFullYear(), today.getMonth(), 1); render(); });
+  renderLegend();
   load();
   setInterval(load, 60000);
 })();
