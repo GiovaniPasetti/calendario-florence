@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5f0">
+  <title>Reservas do Salão — Florence</title>
+  <style>
+    :root { color-scheme: light; --ink:#252923; --muted:#74796f; --line:#e8e5dd; --paper:#fff; --bg:#f7f5f0; --accent:#365b49; --accent-soft:#e7efe9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    main { max-width:980px; margin:0 auto; padding:32px 18px 48px; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; }
+    h1 { font-size:clamp(1.45rem,4vw,2rem); margin:0 0 5px; letter-spacing:-.03em; }
+    .subtitle { color:var(--muted); margin:0; font-size:.95rem; }
+    .status { color:var(--muted); font-size:.8rem; white-space:nowrap; padding-top:8px; }
+    .panel { background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 8px 28px #292b2110; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+    .month { font-weight:700; font-size:1.2rem; text-transform:capitalize; }
+    .nav { display:flex; gap:8px; }
+    button { border:1px solid var(--line); background:white; color:var(--ink); border-radius:10px; padding:9px 13px; font:inherit; cursor:pointer; }
+    button:hover { background:var(--accent-soft); }
+    .grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+    .weekday { color:var(--muted); text-align:center; font-size:.78rem; font-weight:650; padding:7px 0; }
+    .day { min-height:104px; border:1px solid var(--line); border-radius:11px; padding:8px; background:#fff; min-width:0; }
+    .day.empty { background:transparent; border-color:transparent; }
+    .day.today { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+    .number { font-size:.83rem; color:var(--muted); }
+    .booking { display:block; margin-top:6px; padding:4px 6px; border-radius:7px; background:var(--accent-soft); color:#244333; font-size:.78rem; font-weight:650; overflow-wrap:anywhere; }
+    .legend { margin:14px 2px 0; color:var(--muted); font-size:.82rem; }
+    .message { padding:20px; text-align:center; color:var(--muted); }
+    .error { color:#9a3028; }
+    footer { color:var(--muted); font-size:.78rem; text-align:center; margin-top:16px; }
+    @media (max-width:620px) {
+      main { padding:22px 10px 32px; }
+      .panel { padding:10px; border-radius:14px; }
+      .day { min-height:84px; padding:5px; border-radius:8px; }
+      .booking { font-size:.68rem; padding:3px 4px; margin-top:4px; }
+      .weekday { font-size:.68rem; }
+      .number { font-size:.75rem; }
+      header { display:block; }
+      .status { padding-top:8px; }
+      button { padding:8px 10px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Reservas do Salão</h1>
+      <p class="subtitle">Condomínio Florence · Bloco 1</p>
+    </div>
+    <div class="status" id="status" aria-live="polite">Carregando reservas…</div>
+  </header>
+  <section class="panel" aria-label="Calendário de reservas">
+    <div class="toolbar">
+      <div class="month" id="monthLabel"></div>
+      <div class="nav">
+        <button id="prev" type="button" aria-label="Mês anterior">‹</button>
+        <button id="today" type="button">Hoje</button>
+        <button id="next" type="button" aria-label="Próximo mês">›</button>
+      </div>
+    </div>
+    <div class="grid" id="calendar">
+      <div class="message">Carregando calendário…</div>
+    </div>
+    <p class="legend">Os apartamentos indicados correspondem às datas reservadas.</p>
+  </section>
+  <footer>As reservas são sincronizadas automaticamente.</footer>
+</main>
+<script>
+(() => {
+  const monthLabel = document.getElementById('monthLabel');
+  const calendar = document.getElementById('calendar');
+  const status = document.getElementById('status');
+  const weekdays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const today = new Date();
+  let shown = new Date(today.getFullYear(), today.getMonth(), 1);
+  let bookings = [];
+
+  function parseDate(value) {
+    if (!value) return null;
+    const s = String(value).trim();
+    let m = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+    if (!m) return null;
+    const d = new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+    if (d.getFullYear() !== Number(m[1]) || d.getMonth() !== Number(m[2])-1 || d.getDate() !== Number(m[3])) return null;
+    return d;
+  }
+  function key(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function render() {
+    monthLabel.textContent = shown.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+    calendar.innerHTML = '';
+    weekdays.forEach(w => {
+      const el = document.createElement('div');
+      el.className = 'weekday'; el.textContent = w; calendar.appendChild(el);
+    });
+    const first = new Date(shown.getFullYear(), shown.getMonth(), 1);
+    const offset = first.getDay();
+    const count = new Date(shown.getFullYear(), shown.getMonth()+1, 0).getDate();
+    const byDay = new Map();
+    bookings.forEach(b => {
+      if (!b.date) return;
+      const k = key(b.date);
+      if (!byDay.has(k)) byDay.set(k, []);
+      byDay.get(k).push(b.apartment);
+    });
+    for (let i=0; i<offset; i++) {
+      const blank = document.createElement('div'); blank.className='day empty'; calendar.appendChild(blank);
+    }
+    for (let n=1; n<=count; n++) {
+      const d = new Date(shown.getFullYear(), shown.getMonth(), n);
+      const cell = document.createElement('div');
+      cell.className = 'day' + (key(d) === key(today) ? ' today' : '');
+      const num = document.createElement('div'); num.className='number'; num.textContent=n; cell.appendChild(num);
+      (byDay.get(key(d)) || []).forEach(apartment => {
+        const chip = document.createElement('span');
+        chip.className='booking';
+        chip.textContent = `Apto. ${apartment}`;
+        cell.appendChild(chip);
+      });
+      calendar.appendChild(cell);
+    }
+  }
+  async function load() {
+    try {
+      const response = await fetch('/.netlify/functions/reservas', {cache:'no-store'});
+      if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+      const data = await response.json();
+      bookings = (data.records || []).map(r => ({
+        apartment: r.apartamento ?? 'Apartamento',
+        date: parseDate(r.data)
+      })).filter(r => r.date);
+      render();
+      status.textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+    } catch (e) {
+      status.textContent = 'Não foi possível atualizar';
+      calendar.innerHTML = '<div class="message error">Não foi possível carregar as reservas. Confira a configuração do site ou tente novamente em instantes.</div>';
+      console.error(e);
+    }
+  }
+  document.getElementById('prev').addEventListener('click', () => { shown.setMonth(shown.getMonth()-1); render(); });
+  document.getElementById('next').addEventListener('click', () => { shown.setMonth(shown.getMonth()+1); render(); });
+  document.getElementById('today').addEventListener('click', () => { shown = new Date(today.getFullYear(), today.getMonth(), 1); render(); });
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>
