@@ -25,3 +25,5 @@ Não coloque o token em `index.html`, no GitHub, no README ou em mensagens. Se o
 ## Atualização
 
 A página busca os registros ao abrir e a cada 60 segundos. A função retorna apenas os campos de apartamento e data.
+
+O arquivo Florence.apk fica na raiz do site e é disponibilizado pelo botão de download no cabeçalho.

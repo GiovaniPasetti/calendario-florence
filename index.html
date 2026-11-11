@@ -32,6 +32,9 @@
     .brand-copy { color:white; }
     h1 { font-size:clamp(1.25rem,3vw,1.8rem); margin:0 0 4px; letter-spacing:-.02em; }
     .subtitle { color:#e7f9ff; margin:0; font-size:.92rem; }
+    .header-actions { display:flex; flex-direction:column; align-items:flex-end; gap:9px; }
+    .download-app { display:inline-block; padding:10px 14px; border-radius:11px; background:#fff; color:#07547d; text-decoration:none; font-weight:750; font-size:.9rem; box-shadow:0 2px 8px #06456322; }
+    .download-app:hover { background:#e7f9ff; }
     .status { color:#e7f9ff; font-size:.78rem; white-space:nowrap; }
     .panel { background:var(--paper); border:1px solid #d2e8ef; border-radius:18px; padding:18px; box-shadow:0 8px 28px #07547d12; }
     .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
@@ -59,7 +62,9 @@
       header { display:block; padding:14px; }
       .brand { align-items:flex-start; flex-direction:column; gap:8px; }
       .brand img { width:min(100%,300px); max-height:78px; }
-      .status { display:block; padding-top:9px; }
+      .header-actions { align-items:stretch; margin-top:12px; }
+      .download-app { text-align:center; }
+      .status { display:block; padding-top:0; text-align:center; }
       .panel { padding:9px; border-radius:14px; }
       .day { min-height:82px; padding:5px; border-radius:8px; }
       .booking { font-size:.66rem; padding:3px 4px; margin-top:4px; }
@@ -75,11 +80,13 @@
     <div class="brand">
       <img src="Florence1-Logo.png" alt="Florence Residence">
       <div class="brand-copy">
-        <h1>Calendário de Reservas</h1>
-        <p class="subtitle">Condomínio Florence · Bloco 1</p>
+        <h1>Reservas do Salão de Festas</h1>
       </div>
     </div>
-    <div class="status" id="status" aria-live="polite">Carregando reservas…</div>
+    <div class="header-actions">
+      <a class="download-app" href="Florence.apk" download="Florence.apk">Baixar aplicativo de cadastro</a>
+      <div class="status" id="status" aria-live="polite">Carregando reservas…</div>
+    </div>
   </header>
   <section class="panel" aria-label="Calendário de reservas">
     <div class="toolbar">
@@ -98,7 +105,6 @@
       <span class="legend-item"><span class="legend-dot" style="background:#e4e8eb;border:1px solid #cbd2d7"></span>Reservas realizadas</span>
     </div>
   </section>
-  <footer>As reservas são sincronizadas automaticamente.</footer>
 </main>
 <script>
 (() => {
