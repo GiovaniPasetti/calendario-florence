@@ -3,48 +3,68 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f5f0">
+  <meta name="theme-color" content="#087eb5">
   <title>Reservas do Salão — Florence</title>
   <style>
-    :root { color-scheme: light; --ink:#252923; --muted:#74796f; --line:#e8e5dd; --paper:#fff; --bg:#f7f5f0; --accent:#365b49; --accent-soft:#e7efe9; }
+    :root {
+      color-scheme: light;
+      --ink:#102b3b; --muted:#607b89; --line:#d6e7ee;
+      --paper:#ffffff; --bg:#eaf7fb; --blue:#087eb5;
+      --blue-dark:#07547d; --blue-soft:#d9f1fa;
+      --past:#e4e8eb; --past-ink:#59636b;
+    }
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-    main { max-width:980px; margin:0 auto; padding:32px 18px 48px; }
-    header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; }
-    h1 { font-size:clamp(1.45rem,4vw,2rem); margin:0 0 5px; letter-spacing:-.03em; }
-    .subtitle { color:var(--muted); margin:0; font-size:.95rem; }
-    .status { color:var(--muted); font-size:.8rem; white-space:nowrap; padding-top:8px; }
-    .panel { background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 8px 28px #292b2110; }
+    body {
+      margin:0; color:var(--ink);
+      background:linear-gradient(155deg,#e7f8fc 0%,#d2f1f8 48%,#f4fcfd 100%);
+      font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      min-height:100vh;
+    }
+    main { max-width:1020px; margin:0 auto; padding:26px 18px 42px; }
+    header {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:18px; margin-bottom:22px; padding:14px 18px;
+      background:linear-gradient(110deg,#087eb5,#12a9cf);
+      border-radius:18px; box-shadow:0 8px 24px #07547d24;
+    }
+    .brand { display:flex; align-items:center; gap:18px; min-width:0; }
+    .brand img { display:block; width:min( min(100%, 340px), 42vw); max-height:104px; object-fit:contain; }
+    .brand-copy { color:white; }
+    h1 { font-size:clamp(1.25rem,3vw,1.8rem); margin:0 0 4px; letter-spacing:-.02em; }
+    .subtitle { color:#e7f9ff; margin:0; font-size:.92rem; }
+    .status { color:#e7f9ff; font-size:.78rem; white-space:nowrap; }
+    .panel { background:var(--paper); border:1px solid #d2e8ef; border-radius:18px; padding:18px; box-shadow:0 8px 28px #07547d12; }
     .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
-    .month { font-weight:700; font-size:1.2rem; text-transform:capitalize; }
+    .month { font-weight:750; font-size:1.2rem; text-transform:capitalize; color:var(--blue-dark); }
     .nav { display:flex; gap:8px; }
-    button { border:1px solid var(--line); background:white; color:var(--ink); border-radius:10px; padding:9px 13px; font:inherit; cursor:pointer; }
-    button:hover { background:var(--accent-soft); }
+    button { border:1px solid #b9dce8; background:#f5fcfe; color:var(--blue-dark); border-radius:10px; padding:9px 13px; font:inherit; cursor:pointer; font-weight:600; }
+    button:hover { background:var(--blue-soft); }
     .grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
-    .weekday { color:var(--muted); text-align:center; font-size:.78rem; font-weight:650; padding:7px 0; }
+    .weekday { color:#527181; text-align:center; font-size:.78rem; font-weight:700; padding:7px 0; }
     .day { min-height:104px; border:1px solid var(--line); border-radius:11px; padding:8px; background:#fff; min-width:0; }
     .day.empty { background:transparent; border-color:transparent; }
-    .day.today { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
-    .number { font-size:.83rem; color:var(--muted); }
-    .booking { display:block; margin-top:6px; padding:4px 6px; border-radius:7px; background:var(--accent-soft); color:#244333; font-size:.78rem; font-weight:650; overflow-wrap:anywhere; }
-    .legend { margin:14px 2px 0; color:var(--muted); font-size:.82rem; }
-    .legend details { border-top:1px solid var(--line); padding-top:12px; }
-    .legend summary { cursor:pointer; color:var(--accent); font-weight:650; }
-    .legend-items { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
-    .legend-item { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--ink); font-size:.76rem; }
-    .legend-dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+    .day.today { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); background:#f5fcff; }
+    .number { font-size:.83rem; color:#66808c; font-weight:650; }
+    .booking { display:block; margin-top:6px; padding:4px 6px; border-radius:7px; font-size:.76rem; font-weight:700; overflow-wrap:anywhere; border:1px solid transparent; }
+    .booking.future { background:#087eb5; color:#fff; border-color:#066b9c; }
+    .booking.past { background:#e4e8eb; color:#59636b; border-color:#cbd2d7; }
+    .legend { display:flex; flex-wrap:wrap; gap:16px; margin:15px 2px 0; color:var(--muted); font-size:.84rem; }
+    .legend-item { display:inline-flex; align-items:center; gap:7px; }
+    .legend-dot { width:12px; height:12px; border-radius:4px; flex:0 0 12px; }
     .message { padding:20px; text-align:center; color:var(--muted); }
     .error { color:#9a3028; }
-    footer { color:var(--muted); font-size:.78rem; text-align:center; margin-top:16px; }
+    footer { color:#607b89; font-size:.78rem; text-align:center; margin-top:16px; }
     @media (max-width:620px) {
-      main { padding:22px 10px 32px; }
-      .panel { padding:10px; border-radius:14px; }
-      .day { min-height:84px; padding:5px; border-radius:8px; }
-      .booking { font-size:.68rem; padding:3px 4px; margin-top:4px; }
-      .weekday { font-size:.68rem; }
-      .number { font-size:.75rem; }
-      header { display:block; }
-      .status { padding-top:8px; }
+      main { padding:14px 8px 26px; }
+      header { display:block; padding:14px; }
+      .brand { align-items:flex-start; flex-direction:column; gap:8px; }
+      .brand img { width:min(100%,300px); max-height:78px; }
+      .status { display:block; padding-top:9px; }
+      .panel { padding:9px; border-radius:14px; }
+      .day { min-height:82px; padding:5px; border-radius:8px; }
+      .booking { font-size:.66rem; padding:3px 4px; margin-top:4px; }
+      .weekday { font-size:.66rem; }
+      .number { font-size:.74rem; }
       button { padding:8px 10px; }
     }
   </style>
@@ -52,9 +72,12 @@
 <body>
 <main>
   <header>
-    <div>
-      <h1>Reservas do Salão</h1>
-      <p class="subtitle">Condomínio Florence · Bloco 1</p>
+    <div class="brand">
+      <img src="Florence1-Logo.png" alt="Florence Residence">
+      <div class="brand-copy">
+        <h1>Calendário de Reservas</h1>
+        <p class="subtitle">Condomínio Florence · Bloco 1</p>
+      </div>
     </div>
     <div class="status" id="status" aria-live="polite">Carregando reservas…</div>
   </header>
@@ -70,12 +93,9 @@
     <div class="grid" id="calendar">
       <div class="message">Carregando calendário…</div>
     </div>
-    <div class="legend">
-      <details>
-        <summary>Legenda das unidades (28 apartamentos + condomínio)</summary>
-        <div class="legend-items" id="legendItems"></div>
-      </details>
-      <p>As etiquetas coloridas identificam cada apartamento. A reserva do condomínio aparece como <strong>Cond.</strong>.</p>
+    <div class="legend" aria-label="Legenda das reservas">
+      <span class="legend-item"><span class="legend-dot" style="background:#087eb5"></span>Reservas futuras</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#e4e8eb;border:1px solid #cbd2d7"></span>Reservas realizadas</span>
     </div>
   </section>
   <footer>As reservas são sincronizadas automaticamente.</footer>
@@ -85,43 +105,14 @@
   const monthLabel = document.getElementById('monthLabel');
   const calendar = document.getElementById('calendar');
   const status = document.getElementById('status');
-  const legendItems = document.getElementById('legendItems');
   const weekdays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const today = new Date();
   let shown = new Date(today.getFullYear(), today.getMonth(), 1);
   let bookings = [];
-  const apartments = Array.from({length:7}, (_, floor) =>
-    Array.from({length:4}, (_, unit) => String((floor + 1) * 100 + unit + 1))
-  ).flat();
-  const colorFor = apartment => {
-    const value = String(apartment).trim();
-    if (value === '1000') return {background:'#f3e7c8', color:'#674b16', border:'#dfc98f'};
-    const index = apartments.indexOf(value);
-    const hue = index < 0 ? 210 : Math.round(index * 360 / apartments.length);
-    return {
-      background:`hsl(${hue} 72% 91%)`,
-      color:`hsl(${hue} 48% 27%)`,
-      border:`hsl(${hue} 45% 78%)`
-    };
-  };
+
   function displayApartment(apartment) {
-    return String(apartment).trim() === '1000' ? 'Cond.' : `Apto. ${apartment}`;
-  }
-  function renderLegend() {
-    legendItems.innerHTML = '';
-    [...apartments, '1000'].forEach(apartment => {
-      const colors = colorFor(apartment);
-      const item = document.createElement('span');
-      item.className = 'legend-item';
-      const dot = document.createElement('span');
-      dot.className = 'legend-dot';
-      dot.style.background = colors.background;
-      dot.style.border = `1px solid ${colors.border}`;
-      const label = document.createElement('span');
-      label.textContent = apartment === '1000' ? 'Cond.' : apartment;
-      item.append(dot, label);
-      legendItems.appendChild(item);
-    });
+    const value = String(apartment).trim();
+    return value === '1000' ? 'Condomínio' : `AP ${value}`;
   }
 
   function parseDate(value) {
@@ -163,11 +154,7 @@
       const num = document.createElement('div'); num.className='number'; num.textContent=n; cell.appendChild(num);
       (byDay.get(key(d)) || []).forEach(apartment => {
         const chip = document.createElement('span');
-        chip.className='booking';
-        const colors = colorFor(apartment);
-        chip.style.background = colors.background;
-        chip.style.color = colors.color;
-        chip.style.border = `1px solid ${colors.border}`;
+        chip.className = 'booking ' + (key(d) < key(today) ? 'past' : 'future');
         chip.textContent = displayApartment(apartment);
         cell.appendChild(chip);
       });
@@ -194,7 +181,6 @@
   document.getElementById('prev').addEventListener('click', () => { shown.setMonth(shown.getMonth()-1); render(); });
   document.getElementById('next').addEventListener('click', () => { shown.setMonth(shown.getMonth()+1); render(); });
   document.getElementById('today').addEventListener('click', () => { shown = new Date(today.getFullYear(), today.getMonth(), 1); render(); });
-  renderLegend();
   load();
   setInterval(load, 60000);
 })();
