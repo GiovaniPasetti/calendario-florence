@@ -107,10 +107,12 @@ export default async (request) => {
       const existing = await airtableFind(`{data}='${date}'`);
       if (existing.length) return json({ error: 'Essa data já está reservada. Escolha outra.' }, 409);
 
+      const createFields = { apartamento: apartmentNumber, data: date };
+      console.log('Airtable create diagnostic:', JSON.stringify({ apartmentSession: apartment, apartmentNumber, apartmentType: typeof apartmentNumber, date, fieldNames: Object.keys(createFields) }));
       const response = await fetch(airtableUrl(), {
         method: 'POST',
         headers: airtableHeaders(),
-        body: JSON.stringify({ records: [{ fields: { apartamento: apartmentNumber, data: date } }] }),
+        body: JSON.stringify({ records: [{ fields: createFields }] }),
       });
       if (!response.ok) {
         console.error('Airtable create failed:', response.status, await response.text());
