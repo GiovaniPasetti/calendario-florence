@@ -40,7 +40,7 @@
       <label for="apartment">Apartamento</label>
       <input id="apartment" name="username" type="text" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="Ex.: 101" autocomplete="username" required>
       <label for="password">Senha</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
       <button id="submitButton" type="submit">Entrar</button>
     </form>
     <div id="message" class="message" role="status" aria-live="polite"></div>
@@ -50,46 +50,81 @@
 </main>
 <script>
 (() => {
-  const endpoint = '/.netlify/functions/auth';
+  const endpoint = '/.netlify/functions/autenticacao';
   const form = document.getElementById('loginForm');
   const button = document.getElementById('submitButton');
   const message = document.getElementById('message');
   const sessionBox = document.getElementById('sessionBox');
   const sessionText = document.getElementById('sessionText');
   const logoutButton = document.getElementById('logoutButton');
+
   function showSession(apartment) {
-    form.style.display = 'none'; sessionBox.style.display = 'block';
+    form.style.display = 'none';
+    sessionBox.style.display = 'block';
     sessionText.textContent = `Você está conectado como AP ${apartment} — Bloco 1.`;
-    message.textContent = 'Acesso confirmado.'; message.className = 'message success';
+    message.textContent = 'Acesso confirmado.';
+    message.className = 'message success';
   }
+
   async function checkSession() {
     try {
       const response = await fetch(endpoint, { cache:'no-store' });
-      if (response.ok) { const data = await response.json(); if (data.authenticated) showSession(data.apartment); }
-    } catch { /* A tela permanece acessível durante indisponibilidade temporária. */ }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.authenticated) {
+          location.replace('/morador.html');
+        }
+      }
+    } catch { /* Mantém a tela de login disponível em caso de falha temporária. */ }
   }
+
   form.addEventListener('submit', async (event) => {
-    event.preventDefault(); message.textContent = ''; message.className = 'message';
-    button.disabled = true; button.textContent = 'Verificando…';
+    event.preventDefault();
+    message.textContent = '';
+    message.className = 'message';
+    button.disabled = true;
+    button.textContent = 'Verificando…';
     try {
       const response = await fetch(endpoint, {
-        method:'POST', headers:{'content-type':'application/json'},
-        body:JSON.stringify({ action:'login', apartment:document.getElementById('apartment').value.trim(), password:document.getElementById('password').value }),
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({
+          action:'login',
+          apartment:document.getElementById('apartment').value.trim(),
+          password:document.getElementById('password').value,
+        }),
       });
       const data = await response.json();
+      if (data.requiresRegistration) {
+        location.href = `/cadastro.html?apartment=${encodeURIComponent(data.apartment)}`;
+        return;
+      }
       if (!response.ok) throw new Error(data.error || 'Não foi possível entrar.');
-      document.getElementById('password').value = ''; showSession(data.apartment);
-    } catch (error) { message.textContent = error.message || 'Falha de comunicação. Tente novamente.'; }
-    finally { button.disabled = false; button.textContent = 'Entrar'; }
-  });
-  logoutButton.addEventListener('click', async () => {
-    try {
-      await fetch(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:'logout'}) });
+      document.getElementById('password').value = '';
+      location.href = '/morador.html';
+    } catch (error) {
+      message.textContent = error.message || 'Falha de comunicação. Tente novamente.';
     } finally {
-      sessionBox.style.display = 'none'; form.style.display = 'block';
-      message.textContent = 'Você saiu da sua conta.'; message.className = 'message success';
+      button.disabled = false;
+      button.textContent = 'Entrar';
     }
   });
+
+  logoutButton.addEventListener('click', async () => {
+    try {
+      await fetch(endpoint, {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({action:'logout'}),
+      });
+    } finally {
+      sessionBox.style.display = 'none';
+      form.style.display = 'block';
+      message.textContent = 'Você saiu da sua conta.';
+      message.className = 'message success';
+    }
+  });
+
   checkSession();
 })();
 </script>

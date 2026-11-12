@@ -78,12 +78,16 @@
   </section>
   <div class="actions">
     <a href="/">← Voltar ao calendário público</a>
-    <button class="secondary" id="logoutButton" type="button">Sair</button>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end">
+      <a href="/cadastro.html">Alterar minha senha</a>
+      <button class="secondary" id="logoutButton" type="button">Sair</button>
+    </div>
   </div>
 </main>
 <script>
 (() => {
   const endpoint = '/.netlify/functions/morador';
+  const authEndpoint = '/.netlify/functions/autenticacao';
   const list = document.getElementById('bookingContainer');
   const reserveForm = document.getElementById('reserveForm');
   const reserveButton = document.getElementById('reserveButton');
@@ -104,7 +108,10 @@
   async function request(url, options = {}) {
     const response = await fetch(url, { cache:'no-store', ...options });
     const data = await response.json().catch(() => ({}));
-    if (response.status === 401) { location.href = '/login.html'; throw new Error('Sua sessão expirou. Entre novamente.'); }
+    if (response.status === 401) {
+      location.href = '/login.html';
+      throw new Error('Sua sessão expirou. Entre novamente.');
+    }
     if (!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
     return data;
   }
@@ -140,10 +147,17 @@
             if (!confirm(`Deseja cancelar a reserva de ${formatDate(record.date)}?`)) return;
             cancel.disabled = true;
             try {
-              await request(endpoint, { method:'DELETE', headers:{'content-type':'application/json'}, body:JSON.stringify({recordId:record.id}) });
+              await request(endpoint, {
+                method:'DELETE',
+                headers:{'content-type':'application/json'},
+                body:JSON.stringify({recordId:record.id}),
+              });
               showMessage('Reserva cancelada.', true);
               await load();
-            } catch (error) { showMessage(error.message); cancel.disabled = false; }
+            } catch (error) {
+              showMessage(error.message);
+              cancel.disabled = false;
+            }
           });
           li.appendChild(cancel);
         }
@@ -161,16 +175,31 @@
     reserveButton.disabled = true;
     reserveButton.textContent = 'Salvando…';
     try {
-      await request(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({date:dateInput.value}) });
+      await request(endpoint, {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({date:dateInput.value}),
+      });
       dateInput.value = '';
       showMessage('Reserva realizada com sucesso!', true);
       await load();
-    } catch (error) { showMessage(error.message); }
-    finally { reserveButton.disabled = false; reserveButton.textContent = 'Reservar data'; }
+    } catch (error) {
+      showMessage(error.message);
+    } finally {
+      reserveButton.disabled = false;
+      reserveButton.textContent = 'Reservar data';
+    }
   });
   document.getElementById('logoutButton').addEventListener('click', async () => {
-    try { await fetch('/.netlify/functions/auth', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:'logout'}) }); }
-    finally { location.href = '/login.html'; }
+    try {
+      await fetch(authEndpoint, {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({action:'logout'}),
+      });
+    } finally {
+      location.href = '/login.html';
+    }
   });
   load();
 })();
