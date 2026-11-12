@@ -38,7 +38,7 @@
     .status { color:#e7f9ff; font-size:.78rem; white-space:nowrap; }
     .panel { background:var(--paper); border:1px solid #d2e8ef; border-radius:18px; padding:18px; box-shadow:0 8px 28px #07547d12; }
     .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
-    .month { font-weight:750; font-size:1.2rem; text-transform:capitalize; color:var(--blue-dark); }
+    .month { font-weight:750; font-size:1.2rem; color:var(--blue-dark); }
     .nav { display:flex; gap:8px; }
     button { border:1px solid #b9dce8; background:#f5fcfe; color:var(--blue-dark); border-radius:10px; padding:9px 13px; font:inherit; cursor:pointer; font-weight:600; }
     button:hover { background:var(--blue-soft); }
@@ -120,7 +120,9 @@
 
   function displayApartment(apartment) {
     const value = String(apartment).trim();
-    return value === '1000' ? 'Condomínio' : `AP ${value}`;
+    return value === '1000'
+      ? (window.matchMedia('(max-width:620px)').matches ? 'Cond.' : 'Condomínio')
+      : `AP ${value}`;
   }
 
   function parseDate(value) {
@@ -189,6 +191,7 @@
   document.getElementById('prev').addEventListener('click', () => { shown.setMonth(shown.getMonth()-1); render(); });
   document.getElementById('next').addEventListener('click', () => { shown.setMonth(shown.getMonth()+1); render(); });
   document.getElementById('today').addEventListener('click', () => { shown = new Date(today.getFullYear(), today.getMonth(), 1); render(); });
+  window.addEventListener('resize', render);
   load();
   setInterval(load, 60000);
 })();
