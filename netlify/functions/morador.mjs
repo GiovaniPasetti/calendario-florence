@@ -38,7 +38,7 @@ function todayKey() {
 }
 
 function validDate(value) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null;
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
@@ -93,6 +93,11 @@ export default async (request) => {
     }
 
     if (request.method === 'POST') {
+      const apartmentNumber = Number(apartment);
+      if (!Number.isSafeInteger(apartmentNumber)) {
+        return json({ error: 'Apartamento inválido na sessão. Faça login novamente.' }, 400);
+      }
+
       const body = await request.json().catch(() => null);
       const date = validDate(body?.date);
       if (!date) return json({ error: 'Informe uma data válida.' }, 400);
@@ -105,7 +110,7 @@ export default async (request) => {
       const response = await fetch(airtableUrl(), {
         method: 'POST',
         headers: airtableHeaders(),
-        body: JSON.stringify({ records: [{ fields: { apartamento: apartment, data: date } }] }),
+        body: JSON.stringify({ records: [{ fields: { apartamento: apartmentNumber, data: date } }] }),
       });
       if (!response.ok) {
         console.error('Airtable create failed:', response.status, await response.text());
@@ -128,7 +133,7 @@ export default async (request) => {
     const record = await recordResponse.json();
     if (String(record.fields?.apartamento ?? '') !== apartment) return json({ error: 'Você só pode cancelar reservas do seu apartamento.' }, 403);
     const recordDate = String(record.fields?.data || '').replaceAll('-', '/');
-    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(recordDate) || recordDate < todayKey()) {
+    if (!/^\\d{4}\\/\\d{2}\\/\\d{2}$/.test(recordDate) || recordDate < todayKey()) {
       return json({ error: 'Não é possível cancelar uma reserva passada.' }, 400);
     }
 
