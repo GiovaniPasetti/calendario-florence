@@ -59,10 +59,12 @@
     footer { color:#607b89; font-size:.78rem; text-align:center; margin-top:16px; }
     @media (max-width:620px) {
       main { padding:14px 8px 26px; }
-      header { display:block; padding:14px; }
-      .brand { align-items:flex-start; flex-direction:column; gap:8px; }
-      .brand img { width:min(100%,300px); max-height:78px; }
-      .header-actions { align-items:stretch; margin-top:12px; }
+      header { display:flex; flex-direction:column; align-items:center; text-align:center; padding:14px; }
+      .brand { width:100%; align-items:center; flex-direction:column; justify-content:center; gap:8px; text-align:center; }
+      .brand img { width:min(100%,300px); max-height:78px; margin:0 auto; }
+      .brand-copy { width:100%; text-align:center; }
+      .brand-copy h1 { text-align:center; }
+      .header-actions { width:100%; align-items:center; margin-top:12px; }
       .download-app { text-align:center; }
       .status { display:block; padding-top:0; text-align:center; }
       .panel { padding:9px; border-radius:14px; }
