@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087eb5">
+  <title>Acesso do morador — Florence</title>
+  <style>
+    :root { color-scheme:light; --ink:#102b3b; --muted:#607b89; --blue:#087eb5; --dark:#07547d; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:22px; color:var(--ink); background:linear-gradient(155deg,#e7f8fc 0%,#d2f1f8 48%,#f4fcfd 100%); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    main { width:min(100%,440px); }
+    .brand { display:flex; justify-content:center; margin-bottom:18px; }
+    .brand img { display:block; width:min(100%,300px); max-height:90px; object-fit:contain; }
+    .card { background:#fff; border:1px solid #d2e8ef; border-radius:20px; padding:26px; box-shadow:0 12px 34px #07547d18; }
+    h1 { margin:0; text-align:center; color:var(--dark); font-size:1.55rem; letter-spacing:-.02em; }
+    .subtitle { margin:7px 0 22px; text-align:center; color:var(--muted); font-size:.92rem; }
+    label { display:block; margin:15px 0 6px; font-size:.9rem; font-weight:700; color:#294858; }
+    input { width:100%; min-height:48px; padding:11px 13px; border:1px solid #b9dce8; border-radius:11px; background:#fbfeff; color:var(--ink); font:inherit; outline:none; }
+    input:focus { border-color:var(--blue); box-shadow:0 0 0 3px #087eb51c; }
+    button { width:100%; min-height:48px; margin-top:22px; border:0; border-radius:11px; background:linear-gradient(110deg,#087eb5,#12a9cf); color:#fff; font:700 1rem system-ui,sans-serif; cursor:pointer; }
+    button:disabled { opacity:.65; cursor:wait; }
+    .message { min-height:22px; margin-top:13px; text-align:center; font-size:.88rem; color:#9a3028; }
+    .message.success { color:#16734a; }
+    .back { display:block; margin-top:18px; text-align:center; color:var(--dark); text-decoration:none; font-size:.9rem; font-weight:650; }
+    .back:hover { text-decoration:underline; }
+    .session { display:none; margin-top:16px; padding:14px; border-radius:12px; background:#eef9f3; color:#17623f; text-align:center; font-size:.92rem; }
+    .session button { margin-top:12px; background:#fff; color:var(--dark); border:1px solid #b9dce8; }
+    @media(max-width:480px) { body { padding:14px; } .card { padding:22px 18px; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="brand"><img src="Florence1-Logo.png" alt="Florence Residence"></div>
+  <section class="card">
+    <h1>Acesso do morador</h1>
+    <p class="subtitle">Entre com os dados do seu apartamento — Bloco 1.</p>
+    <form id="loginForm" autocomplete="on">
+      <label for="apartment">Apartamento</label>
+      <input id="apartment" name="username" type="text" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="Ex.: 101" autocomplete="username" required>
+      <label for="password">Senha</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+      <button id="submitButton" type="submit">Entrar</button>
+    </form>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <div id="sessionBox" class="session"><div id="sessionText"></div><button id="logoutButton" type="button">Sair</button></div>
+    <a class="back" href="/">Voltar ao calendário</a>
+  </section>
+</main>
+<script>
+(() => {
+  const endpoint = '/.netlify/functions/auth';
+  const form = document.getElementById('loginForm');
+  const button = document.getElementById('submitButton');
+  const message = document.getElementById('message');
+  const sessionBox = document.getElementById('sessionBox');
+  const sessionText = document.getElementById('sessionText');
+  const logoutButton = document.getElementById('logoutButton');
+  function showSession(apartment) {
+    form.style.display = 'none'; sessionBox.style.display = 'block';
+    sessionText.textContent = `Você está conectado como AP ${apartment} — Bloco 1.`;
+    message.textContent = 'Acesso confirmado.'; message.className = 'message success';
+  }
+  async function checkSession() {
+    try {
+      const response = await fetch(endpoint, { cache:'no-store' });
+      if (response.ok) { const data = await response.json(); if (data.authenticated) showSession(data.apartment); }
+    } catch { /* A tela permanece acessível durante indisponibilidade temporária. */ }
+  }
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault(); message.textContent = ''; message.className = 'message';
+    button.disabled = true; button.textContent = 'Verificando…';
+    try {
+      const response = await fetch(endpoint, {
+        method:'POST', headers:{'content-type':'application/json'},
+        body:JSON.stringify({ action:'login', apartment:document.getElementById('apartment').value.trim(), password:document.getElementById('password').value }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Não foi possível entrar.');
+      document.getElementById('password').value = ''; showSession(data.apartment);
+    } catch (error) { message.textContent = error.message || 'Falha de comunicação. Tente novamente.'; }
+    finally { button.disabled = false; button.textContent = 'Entrar'; }
+  });
+  logoutButton.addEventListener('click', async () => {
+    try {
+      await fetch(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:'logout'}) });
+    } finally {
+      sessionBox.style.display = 'none'; form.style.display = 'block';
+      message.textContent = 'Você saiu da sua conta.'; message.className = 'message success';
+    }
+  });
+  checkSession();
+})();
+</script>
+</body>
+</html>
