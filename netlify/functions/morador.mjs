@@ -135,7 +135,7 @@ export default async (request) => {
     const record = await recordResponse.json();
     if (String(record.fields?.apartamento ?? '') !== apartment) return json({ error: 'Você só pode cancelar reservas do seu apartamento.' }, 403);
     const recordDate = String(record.fields?.data || '').replaceAll('-', '/');
-    if (!/^\\d{4}\\/\\d{2}\\/\\d{2}$/.test(recordDate) || recordDate < todayKey()) {
+    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(recordDate) || recordDate < todayKey()) {
       return json({ error: 'Não é possível cancelar uma reserva passada.' }, 400);
     }
 
