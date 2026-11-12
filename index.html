@@ -48,7 +48,7 @@
     .day.empty { background:transparent; border-color:transparent; }
     .day.today { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); background:#f5fcff; }
     .number { font-size:.83rem; color:#66808c; font-weight:650; }
-    .booking { display:block; min-width:0; margin-top:6px; padding:4px 6px; border-radius:7px; font-size:.76rem; font-weight:700; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; border:1px solid transparent; }
+    .booking { display:block; margin-top:6px; padding:4px 6px; border-radius:7px; font-size:.76rem; font-weight:700; overflow-wrap:anywhere; border:1px solid transparent; }
     .booking.future { background:#087eb5; color:#fff; border-color:#066b9c; }
     .booking.past { background:#e4e8eb; color:#59636b; border-color:#cbd2d7; }
     .legend { display:flex; flex-wrap:wrap; gap:16px; margin:15px 2px 0; color:var(--muted); font-size:.84rem; }
@@ -136,7 +136,8 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
   function render() {
-    monthLabel.textContent = shown.toLocaleDateString('pt-BR', {month:'long', year:'numeric'}).replace(/\bDe\b/g, 'de');
+    const monthText = shown.toLocaleDateString('pt-BR', {month:'long', year:'numeric'}).replace(/\bDe\b/g, 'de');
+    monthLabel.textContent = monthText.charAt(0).toLocaleUpperCase('pt-BR') + monthText.slice(1);
     calendar.innerHTML = '';
     weekdays.forEach(w => {
       const el = document.createElement('div');
