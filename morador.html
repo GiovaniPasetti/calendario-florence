@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087eb5">
+  <title>Área do morador — Florence</title>
+  <style>
+    :root { color-scheme:light; --ink:#102b3b; --muted:#607b89; --blue:#087eb5; --dark:#07547d; --line:#d6e7ee; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:24px 14px 40px; color:var(--ink); background:linear-gradient(155deg,#e7f8fc 0%,#d2f1f8 48%,#f4fcfd 100%); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    main { width:min(100%,760px); margin:0 auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; border-radius:18px; background:linear-gradient(110deg,#087eb5,#12a9cf); box-shadow:0 8px 24px #07547d24; color:white; }
+    header img { width:min(45%,240px); max-height:76px; object-fit:contain; }
+    header h1 { margin:0; font-size:clamp(1.15rem,3vw,1.55rem); text-align:right; }
+    .card { margin-top:18px; padding:20px; border:1px solid #d2e8ef; border-radius:18px; background:white; box-shadow:0 8px 28px #07547d12; }
+    h2 { margin:0 0 14px; color:var(--dark); font-size:1.12rem; }
+    .welcome { margin:0; color:var(--muted); }
+    label { display:block; margin:0 0 7px; font-weight:700; font-size:.9rem; }
+    input { width:100%; min-height:46px; padding:10px 12px; border:1px solid #b9dce8; border-radius:10px; font:inherit; color:var(--ink); background:#fbfeff; }
+    button { border:0; border-radius:10px; padding:11px 16px; background:linear-gradient(110deg,#087eb5,#12a9cf); color:white; font:700 .95rem system-ui,sans-serif; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    .form-row { display:flex; align-items:end; gap:10px; }
+    .form-row > div { flex:1; min-width:0; }
+    .muted { color:var(--muted); font-size:.88rem; }
+    .message { min-height:22px; margin-top:12px; font-size:.9rem; color:#9a3028; }
+    .message.success { color:#16734a; }
+    .booking-list { display:grid; gap:9px; padding:0; margin:0; list-style:none; }
+    .booking { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border:1px solid var(--line); border-radius:11px; background:#f8fcfd; }
+    .booking strong { color:var(--dark); }
+    .cancel { padding:8px 11px; background:#fff; border:1px solid #cbdde4; color:#8b3028; white-space:nowrap; }
+    .empty { padding:16px; border-radius:10px; background:#f5fafc; color:var(--muted); text-align:center; }
+    .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; }
+    .secondary { background:#fff; color:var(--dark); border:1px solid #b9dce8; }
+    a { color:var(--dark); text-decoration:none; font-weight:650; font-size:.9rem; }
+    a:hover { text-decoration:underline; }
+    @media(max-width:520px) {
+      body { padding:12px 8px 28px; }
+      header { flex-direction:column; text-align:center; }
+      header img { width:min(100%,220px); }
+      header h1 { text-align:center; }
+      .card { padding:16px; }
+      .form-row { align-items:stretch; flex-direction:column; }
+      .form-row button { width:100%; }
+      .booking { align-items:flex-start; }
+      .actions { align-items:stretch; flex-direction:column; }
+      .actions button { width:100%; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/Florence1-Logo.png" alt="Florence Residence">
+    <h1>Área do morador</h1>
+  </header>
+  <section class="card">
+    <h2 id="welcome">Minhas reservas</h2>
+    <p class="welcome" id="apartmentLabel">Carregando seus dados…</p>
+  </section>
+  <section class="card">
+    <h2>Fazer uma reserva</h2>
+    <form id="reserveForm">
+      <div class="form-row">
+        <div>
+          <label for="date">Selecione uma data disponível</label>
+          <input id="date" name="date" type="date" required>
+        </div>
+        <button id="reserveButton" type="submit">Reservar data</button>
+      </div>
+    </form>
+    <div class="message" id="reserveMessage" role="status" aria-live="polite"></div>
+    <p class="muted">A reserva será confirmada após o registro no sistema.</p>
+  </section>
+  <section class="card">
+    <h2>Reservas do meu apartamento</h2>
+    <div id="bookingContainer" class="empty">Carregando reservas…</div>
+  </section>
+  <div class="actions">
+    <a href="/">← Voltar ao calendário público</a>
+    <button class="secondary" id="logoutButton" type="button">Sair</button>
+  </div>
+</main>
+<script>
+(() => {
+  const endpoint = '/.netlify/functions/morador';
+  const list = document.getElementById('bookingContainer');
+  const reserveForm = document.getElementById('reserveForm');
+  const reserveButton = document.getElementById('reserveButton');
+  const reserveMessage = document.getElementById('reserveMessage');
+  const dateInput = document.getElementById('date');
+  const today = new Date();
+  const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
+  dateInput.min = localToday;
+
+  function showMessage(text, success = false) {
+    reserveMessage.textContent = text;
+    reserveMessage.className = 'message' + (success ? ' success' : '');
+  }
+  function formatDate(value) {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
+  }
+  async function request(url, options = {}) {
+    const response = await fetch(url, { cache:'no-store', ...options });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) { location.href = '/login.html'; throw new Error('Sua sessão expirou. Entre novamente.'); }
+    if (!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
+    return data;
+  }
+  async function load() {
+    try {
+      const data = await request(endpoint);
+      document.getElementById('apartmentLabel').textContent = `Conectado como AP ${data.apartment} — Bloco 1.`;
+      if (!data.records.length) {
+        list.className = 'empty';
+        list.textContent = 'Você ainda não possui reservas cadastradas.';
+        return;
+      }
+      list.className = '';
+      const ul = document.createElement('ul');
+      ul.className = 'booking-list';
+      data.records.forEach(record => {
+        const li = document.createElement('li');
+        li.className = 'booking';
+        const info = document.createElement('div');
+        const strong = document.createElement('strong');
+        strong.textContent = formatDate(record.date);
+        const note = document.createElement('div');
+        note.className = 'muted';
+        note.textContent = record.date < localToday ? 'Reserva realizada' : 'Reserva futura';
+        info.append(strong, note);
+        li.appendChild(info);
+        if (record.date >= localToday) {
+          const cancel = document.createElement('button');
+          cancel.type = 'button';
+          cancel.className = 'cancel';
+          cancel.textContent = 'Cancelar';
+          cancel.addEventListener('click', async () => {
+            if (!confirm(`Deseja cancelar a reserva de ${formatDate(record.date)}?`)) return;
+            cancel.disabled = true;
+            try {
+              await request(endpoint, { method:'DELETE', headers:{'content-type':'application/json'}, body:JSON.stringify({recordId:record.id}) });
+              showMessage('Reserva cancelada.', true);
+              await load();
+            } catch (error) { showMessage(error.message); cancel.disabled = false; }
+          });
+          li.appendChild(cancel);
+        }
+        ul.appendChild(li);
+      });
+      list.replaceChildren(ul);
+    } catch (error) {
+      list.className = 'empty';
+      list.textContent = error.message;
+    }
+  }
+  reserveForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    showMessage('');
+    reserveButton.disabled = true;
+    reserveButton.textContent = 'Salvando…';
+    try {
+      await request(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({date:dateInput.value}) });
+      dateInput.value = '';
+      showMessage('Reserva realizada com sucesso!', true);
+      await load();
+    } catch (error) { showMessage(error.message); }
+    finally { reserveButton.disabled = false; reserveButton.textContent = 'Reservar data'; }
+  });
+  document.getElementById('logoutButton').addEventListener('click', async () => {
+    try { await fetch('/.netlify/functions/auth', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:'logout'}) }); }
+    finally { location.href = '/login.html'; }
+  });
+  load();
+})();
+</script>
+</body>
+</html>
