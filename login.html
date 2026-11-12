@@ -26,6 +26,7 @@
     .back:hover { text-decoration:underline; }
     .session { display:none; margin-top:16px; padding:14px; border-radius:12px; background:#eef9f3; color:#17623f; text-align:center; font-size:.92rem; }
     .session button { margin-top:12px; background:#fff; color:var(--dark); border:1px solid #b9dce8; }
+    .area-link { display:block; margin-top:12px; padding:12px; border-radius:10px; background:linear-gradient(110deg,#087eb5,#12a9cf); color:#fff; text-decoration:none; font-weight:750; }
     @media(max-width:480px) { body { padding:14px; } .card { padding:22px 18px; } }
   </style>
 </head>
@@ -43,7 +44,7 @@
       <button id="submitButton" type="submit">Entrar</button>
     </form>
     <div id="message" class="message" role="status" aria-live="polite"></div>
-    <div id="sessionBox" class="session"><div id="sessionText"></div><button id="logoutButton" type="button">Sair</button></div>
+    <div id="sessionBox" class="session"><div id="sessionText"></div><a class="area-link" href="/morador.html">Acessar minhas reservas</a><button id="logoutButton" type="button">Sair</button></div>
     <a class="back" href="/">Voltar ao calendário</a>
   </section>
 </main>
