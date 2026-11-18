@@ -73,7 +73,7 @@ async function listAll(table, fields, formula) {
 }
 async function findResident(apartment) {
   const formula = "OR({apartamento}='" + apartment + "',{apartamento}=" + apartment + ")";
-  const records = await listAll(RESIDENT_TABLE, ['apartamento', 'senha'], formula);
+  const records = await listAll(RESIDENT_TABLE, ['apartamento', 'senha', 'device_ID'], formula);
   return records.length === 1 ? records[0] : null;
 }
 async function authorize(request) {
@@ -172,7 +172,7 @@ export default async request => {
         }
         const response = await fetch(url(RESIDENT_TABLE, '/' + encodeURIComponent(resident.id)), {
           method: 'PATCH', headers: headers(),
-          body: JSON.stringify({ fields: { senha: DEFAULT_PASSWORD } }),
+          body: JSON.stringify({ fields: { senha: DEFAULT_PASSWORD, device_ID: 0 } }),
         });
         if (!response.ok) {
           console.error('Airtable password reset failed:', response.status, await response.text());
