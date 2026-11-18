@@ -35,7 +35,6 @@ function makeSession(apartment, password) {
   const now = Math.floor(Date.now() / 1000);
   const payload = Buffer.from(JSON.stringify({
     apartment,
-    block: '1',
     credentialTag: credentialTag(apartment, password),
     iat: now,
     exp: now + SESSION_SECONDS,
@@ -56,7 +55,7 @@ function sessionFrom(request) {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    if (!data.apartment || data.block !== '1' || !data.credentialTag ||
+    if (!data.apartment || !data.credentialTag ||
         data.exp < Math.floor(Date.now() / 1000)) return null;
     return data;
   } catch { return null; }
@@ -108,10 +107,10 @@ async function airtableFind(formula) {
 }
 
 async function findResident(apartment) {
-  const formula = `AND(OR({apartamento}='${apartment}',{apartamento}=${apartment}),OR({bloco}='1',{bloco}=1))`;
+  const formula = `OR({apartamento}='${apartment}',{apartamento}=${apartment})`;
   const params = new URLSearchParams();
   params.set('filterByFormula', formula);
-  for (const field of ['apartamento', 'bloco', 'senha']) params.append('fields[]', field);
+  for (const field of ['apartamento', 'senha']) params.append('fields[]', field);
   params.set('maxRecords', '2');
   const response = await fetch(`${airtableUrl(RESIDENT_TABLE)}?${params}`, { headers: airtableHeaders() });
   if (!response.ok) {
