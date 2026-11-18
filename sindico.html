@@ -19,7 +19,7 @@
     label { display:block; margin:0 0 7px; font-weight:700; font-size:.9rem; }
     input, select { width:100%; min-height:46px; padding:10px 12px; border:1px solid #b9dce8; border-radius:10px; font:inherit; color:var(--ink); background:#fbfeff; }
     button { border:0; border-radius:10px; padding:11px 16px; background:linear-gradient(110deg,#087eb5,#12a9cf); color:white; font:700 .95rem system-ui,sans-serif; cursor:pointer; }
-    button:disabled { opacity:.6; cursor:wait; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
     .secondary { background:#fff; color:var(--dark); border:1px solid #b9dce8; }
     .danger { padding:8px 11px; background:#fff; border:1px solid #e3c8c5; color:#963b32; white-space:nowrap; }
     .form-row { display:grid; grid-template-columns:1fr 1fr auto; align-items:end; gap:12px; }
@@ -220,7 +220,7 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'danger';
-        button.textContent = resident.passwordReset ? 'Já está redefinida' : 'Redefinir senha';
+        button.textContent = resident.passwordReset ? 'Aguardando novo cadastro' : 'Redefinir senha';
         button.disabled = resident.passwordReset;
         button.addEventListener('click', async () => {
           if (!confirm('Redefinir a senha do ' + apartmentName(resident.apartment) + '? A senha atual será substituída pela senha padrão e as sessões abertas serão invalidadas.')) return;
