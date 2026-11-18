@@ -128,8 +128,9 @@ export default async request => {
         .sort((a, b) => a.date.localeCompare(b.date) || Number(a.apartment) - Number(b.apartment));
       const residents = results[1].map(record => ({
         apartment: String(record.fields && record.fields.apartamento != null ? record.fields.apartamento : ''),
+        passwordNotSet: !String(record.fields && record.fields.senha || '').trim(),
         passwordReset: String(record.fields && record.fields.senha || '') === DEFAULT_PASSWORD,
-      })).filter(item => validApartment(item.apartment))
+      })).filter(item => validApartment(item.apartment) && item.apartment !== '2000')
         .sort((a, b) => Number(a.apartment) - Number(b.apartment));
       return json({ apartment: '1000', reservations, residents });
     }
@@ -141,7 +142,7 @@ export default async request => {
       if (body.action === 'create') {
         const apartment = String(body.apartment || '');
         const date = validDate(body.date);
-        if (!validApartment(apartment)) return json({ error: 'Selecione um apartamento válido.' }, 400);
+        if (!validApartment(apartment) || apartment === '2000') return json({ error: 'Selecione um apartamento válido.' }, 400);
         if (!date) return json({ error: 'Informe uma data válida.' }, 400);
         if (date < todayKey()) return json({ error: 'Não é possível criar reserva para uma data passada.' }, 400);
         const resident = await findResident(apartment);
@@ -161,7 +162,7 @@ export default async request => {
 
       if (body.action === 'resetPassword') {
         const apartment = String(body.apartment || '');
-        if (!validApartment(apartment) || apartment === '1000') {
+        if (!validApartment(apartment) || apartment === '1000' || apartment === '2000') {
           return json({ error: 'Selecione um apartamento válido para redefinir.' }, 400);
         }
         const resident = await findResident(apartment);
