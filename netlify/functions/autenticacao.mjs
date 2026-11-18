@@ -213,7 +213,7 @@ export default async (request) => {
         return json({ error: 'A senha atual está incorreta.' }, 401);
       }
       if (!validNewPassword(newPassword)) {
-        return json({ error: 'A nova senha deve ter pelo menos 8 caracteres e não pode ser a senha padrão.' }, 400);
+        return json({ error: 'A nova senha deve ter pelo menos 1 caractere e não pode ser a senha padrão.' }, 400);
       }
 
       await updateResidentPassword(current.resident.id, newPassword);
