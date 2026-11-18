@@ -172,7 +172,7 @@ export default async request => {
         }
         const response = await fetch(url(RESIDENT_TABLE, '/' + encodeURIComponent(resident.id)), {
           method: 'PATCH', headers: headers(),
-          body: JSON.stringify({ fields: { senha: DEFAULT_PASSWORD, device_ID: 0 } }),
+          body: JSON.stringify({ fields: { senha: DEFAULT_PASSWORD, device_ID: "0" } }),
         });
         if (!response.ok) {
           console.error('Airtable password reset failed:', response.status, await response.text());
