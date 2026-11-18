@@ -75,7 +75,7 @@ function validApartment(value) {
 }
 
 function validNewPassword(value) {
-  return typeof value === 'string' && value.length >= 8 && value.length <= 200 &&
+  return typeof value === 'string' && value.length >= 1 && value.length <= 200 &&
     value !== DEFAULT_PASSWORD;
 }
 
@@ -186,7 +186,7 @@ export default async (request) => {
       const newPassword = String(body.newPassword || '');
       if (!validApartment(apartment)) return json({ error: 'Informe um apartamento válido.' }, 400);
       if (!validNewPassword(newPassword)) {
-        return json({ error: 'A nova senha deve ter pelo menos 8 caracteres e não pode ser a senha padrão.' }, 400);
+        return json({ error: 'A nova senha deve ter pelo menos 1 caractere e não pode ser a senha padrão.' }, 400);
       }
 
       const resident = await findResident(apartment);
