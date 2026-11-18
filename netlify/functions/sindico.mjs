@@ -96,13 +96,13 @@ function todayKey() {
   return get('year') + '/' + get('month') + '/' + get('day');
 }
 function validDate(value) {
-  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const p = value.split('-').map(Number);
   const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
   if (d.getUTCFullYear() !== p[0] || d.getUTCMonth() !== p[1] - 1 || d.getUTCDate() !== p[2]) return null;
   return p[0] + '/' + String(p[1]).padStart(2, '0') + '/' + String(p[2]).padStart(2, '0');
 }
-function validApartment(value) { return /^\\d{3,4}$/.test(String(value || '')); }
+function validApartment(value) { return /^\d{3,4}$/.test(String(value || '')); }
 
 export default async request => {
   try {
@@ -125,7 +125,7 @@ export default async request => {
         id: record.id,
         apartment: String(record.fields && record.fields.apartamento != null ? record.fields.apartamento : ''),
         date: String(record.fields && record.fields.data || '').replaceAll('/', '-'),
-      })).filter(item => item.id && validApartment(item.apartment) && /^\\d{4}-\\d{2}-\\d{2}$/.test(item.date))
+      })).filter(item => item.id && validApartment(item.apartment) && /^\d{4}-\d{2}-\d{2}$/.test(item.date))
         .sort((a, b) => a.date.localeCompare(b.date) || Number(a.apartment) - Number(b.apartment));
       const residents = results[1].map(record => ({
         apartment: String(record.fields && record.fields.apartamento != null ? record.fields.apartamento : ''),
