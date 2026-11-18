@@ -212,18 +212,22 @@
       const info = document.createElement('div');
       const title = document.createElement('strong');
       title.textContent = apartmentName(resident.apartment);
-      const detail = document.createElement('small');
-      detail.textContent = resident.passwordNotSet ? 'Não cadastrado' : (resident.passwordReset ? 'Aguardando cadastro de nova senha' : 'Senha pessoal cadastrada');
-      info.append(title, detail);
+      if (resident.passwordNotSet) {
+        const detail = document.createElement('small');
+        detail.textContent = 'Não cadastrada';
+        info.append(title, detail);
+      } else {
+        info.appendChild(title);
+      }
       li.appendChild(info);
       if (resident.apartment !== '1000') {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'danger';
-        button.textContent = resident.passwordReset ? 'Aguardando novo cadastro' : 'Redefinir senha';
+        button.textContent = resident.passwordReset ? 'Não cadastrada' : 'Redefinir senha';
         button.disabled = resident.passwordReset;
         button.addEventListener('click', async () => {
-          if (!confirm('Redefinir a senha do ' + apartmentName(resident.apartment) + '? A senha atual será substituída pela senha padrão e as sessões abertas serão invalidadas.')) return;
+          if (!confirm('Redefinir a senha do ' + apartmentName(resident.apartment) + '?')) return;
           button.disabled = true;
           try {
             await request(endpoint, {
@@ -231,7 +235,7 @@
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ action: 'resetPassword', apartment: resident.apartment }),
             });
-            setMessage(residentMessage, 'Senha do ' + apartmentName(resident.apartment) + ' redefinida. O morador deverá cadastrar uma nova senha no próximo acesso.', true);
+            setMessage(residentMessage, 'Senha redefinida para ' + apartmentName(resident.apartment) + '.', true);
             await load();
           } catch (error) {
             setMessage(residentMessage, error.message, false);
@@ -239,10 +243,6 @@
           }
         });
         li.appendChild(button);
-      } else {
-        const note = document.createElement('small');
-        note.textContent = 'Conta administrativa';
-        li.appendChild(note);
       }
       ul.appendChild(li);
     });
