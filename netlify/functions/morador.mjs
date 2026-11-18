@@ -141,6 +141,9 @@ export default async (request) => {
     if (!session) return json({ error: 'Faça login para continuar.' }, 401, { 'set-cookie': sessionCookie('', 0) });
 
     const apartment = String(session.apartment);
+    if (apartment === '1000') {
+      return json({ error: 'Acesso administrativo. Redirecionando para a área do síndico.', admin: true }, 403);
+    }
     const resident = await findResident(apartment);
     const savedPassword = String(resident?.fields?.senha ?? '');
     if (!resident || !savedPassword ||
