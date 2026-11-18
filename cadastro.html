@@ -73,10 +73,6 @@
       const response = await fetch(endpoint, {cache:'no-store'});
       if (response.ok) {
         const data = await response.json();
-        if (data.authenticated && String(data.apartment) === '1000') {
-          location.replace('/sindico.html');
-          return;
-        }
         if (data.authenticated) {
           mode = 'change';
           document.getElementById('title').textContent = 'Alterar minha senha';
