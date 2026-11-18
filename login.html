@@ -72,7 +72,7 @@
       if (response.ok) {
         const data = await response.json();
         if (data.authenticated) {
-          location.replace('/morador.html');
+          location.replace(String(data.apartment) === '1000' ? '/sindico.html' : '/morador.html');
         }
       }
     } catch { /* Mantém a tela de login disponível em caso de falha temporária. */ }
@@ -101,7 +101,7 @@
       }
       if (!response.ok) throw new Error(data.error || 'Não foi possível entrar.');
       document.getElementById('password').value = '';
-      location.href = '/morador.html';
+      location.href = String(data.apartment) === '1000' ? '/sindico.html' : '/morador.html';
     } catch (error) {
       message.textContent = error.message || 'Falha de comunicação. Tente novamente.';
     } finally {
