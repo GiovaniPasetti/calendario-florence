@@ -139,16 +139,19 @@
   }
   function renderApartmentOptions(residents) {
     apartmentSelect.replaceChildren();
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = 'Selecione o apartamento';
-    apartmentSelect.appendChild(placeholder);
-    residents.forEach(resident => {
-      const option = document.createElement('option');
-      option.value = resident.apartment;
-      option.textContent = apartmentName(resident.apartment);
-      apartmentSelect.appendChild(option);
-    });
+    const condominium = document.createElement('option');
+    condominium.value = '1000';
+    condominium.textContent = 'Condomínio (AP 1000)';
+    apartmentSelect.appendChild(condominium);
+    residents
+      .filter(resident => String(resident.apartment) !== '1000')
+      .forEach(resident => {
+        const option = document.createElement('option');
+        option.value = resident.apartment;
+        option.textContent = apartmentName(resident.apartment);
+        apartmentSelect.appendChild(option);
+      });
+    apartmentSelect.value = '1000';
   }
   function renderReservations(records) {
     document.getElementById('reservationCount').textContent = records.length + ' reserva(s) cadastrada(s)';
