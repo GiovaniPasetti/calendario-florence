@@ -224,10 +224,10 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'danger';
-        button.textContent = resident.passwordReset ? 'Não cadastrada' : 'Redefinir senha';
+        button.textContent = resident.passwordReset ? 'Não cadastrada' : 'Excluir Senha';
         button.disabled = resident.passwordReset;
         button.addEventListener('click', async () => {
-          if (!confirm('Redefinir a senha do ' + apartmentName(resident.apartment) + '?')) return;
+          if (!confirm('Excluir a senha do ' + apartmentName(resident.apartment) + '?')) return;
           button.disabled = true;
           try {
             await request(endpoint, {
@@ -235,7 +235,7 @@
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ action: 'resetPassword', apartment: resident.apartment }),
             });
-            setMessage(residentMessage, 'Senha redefinida para ' + apartmentName(resident.apartment) + '.', true);
+            setMessage(residentMessage, 'Senha excluída para ' + apartmentName(resident.apartment) + '.', true);
             await load();
           } catch (error) {
             setMessage(residentMessage, error.message, false);
