@@ -73,6 +73,10 @@
       const response = await fetch(endpoint, {cache:'no-store'});
       if (response.ok) {
         const data = await response.json();
+        if (data.authenticated && String(data.apartment) === '1000') {
+          location.replace('/sindico.html');
+          return;
+        }
         if (data.authenticated) {
           mode = 'change';
           document.getElementById('title').textContent = 'Alterar minha senha';
@@ -122,7 +126,7 @@
       if (!response.ok) throw new Error(data.error || 'Não foi possível salvar a senha.');
       message.textContent = 'Senha salva com sucesso. Acessando suas reservas…';
       message.className = 'message success';
-      setTimeout(() => location.replace('/morador.html'), 700);
+      setTimeout(() => location.replace(String(data.apartment) === '1000' ? '/sindico.html' : '/morador.html'), 700);
     } catch (error) {
       message.textContent = error.message || 'Falha de comunicação. Tente novamente.';
     } finally {
