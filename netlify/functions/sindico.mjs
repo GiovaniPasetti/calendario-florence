@@ -130,7 +130,7 @@ export default async request => {
         apartment: String(record.fields && record.fields.apartamento != null ? record.fields.apartamento : ''),
         passwordNotSet: !String(record.fields && record.fields.senha || '').trim(),
         passwordReset: String(record.fields && record.fields.senha || '') === DEFAULT_PASSWORD,
-      })).filter(item => validApartment(item.apartment) && item.apartment !== '2000')
+      })).filter(item => validApartment(item.apartment) && !['1000', '2000'].includes(item.apartment))
         .sort((a, b) => Number(a.apartment) - Number(b.apartment));
       return json({ apartment: '1000', reservations, residents });
     }
