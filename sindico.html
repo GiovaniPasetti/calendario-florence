@@ -74,20 +74,17 @@
         <button id="createButton" type="submit">Criar reserva</button>
       </div>
     </form>
-    <p class="note">O síndico pode criar várias reservas para o mesmo apartamento. Cada data do salão, porém, só pode ter uma reserva.</p>
     <div id="createMessage" class="message" role="status" aria-live="polite"></div>
   </section>
 
   <section class="card">
     <h2>Todas as reservas</h2>
-    <p class="muted">É possível excluir reservas de qualquer apartamento, inclusive de datas passadas.</p>
     <div id="reservationCount" class="status"></div>
     <div id="reservationList" class="empty">Carregando reservas…</div>
   </section>
 
   <section class="card">
     <h2>Senhas dos moradores</h2>
-    <p class="muted">Ao redefinir, a senha volta ao padrão e as sessões abertas daquele apartamento deixam de funcionar. O morador criará uma nova senha no próximo acesso.</p>
     <div id="residentList" class="empty">Carregando apartamentos…</div>
     <div id="residentMessage" class="message" role="status" aria-live="polite"></div>
   </section>
@@ -147,7 +144,7 @@
     condominium.textContent = 'Condomínio';
     apartmentSelect.appendChild(condominium);
     residents
-      .filter(resident => String(resident.apartment) !== '1000')
+      .filter(resident => !['1000', '2000'].includes(String(resident.apartment)))
       .forEach(resident => {
         const option = document.createElement('option');
         option.value = resident.apartment;
@@ -216,7 +213,7 @@
       const title = document.createElement('strong');
       title.textContent = apartmentName(resident.apartment);
       const detail = document.createElement('small');
-      detail.textContent = resident.passwordReset ? 'Aguardando cadastro de nova senha' : 'Senha pessoal cadastrada';
+      detail.textContent = resident.passwordNotSet ? 'Não cadastrado' : (resident.passwordReset ? 'Aguardando cadastro de nova senha' : 'Senha pessoal cadastrada');
       info.append(title, detail);
       li.appendChild(info);
       if (resident.apartment !== '1000') {
