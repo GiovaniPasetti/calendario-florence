@@ -35,7 +35,6 @@ function makeSession(apartment, password) {
   const now = Math.floor(Date.now() / 1000);
   const payload = Buffer.from(JSON.stringify({
     apartment,
-    block: '1',
     credentialTag: credentialTag(apartment, password),
     iat: now,
     exp: now + SESSION_SECONDS,
@@ -59,7 +58,7 @@ function readSession(request) {
 
   try {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    if (!data.apartment || data.block !== '1' ||
+    if (!data.apartment ||
         !data.credentialTag || data.exp < Math.floor(Date.now() / 1000)) return null;
     return data;
   } catch {
@@ -87,10 +86,10 @@ function airtableHeaders() {
 }
 
 async function findResident(apartment) {
-  const formula = `AND(OR({apartamento}='${apartment}',{apartamento}=${apartment}),OR({bloco}='1',{bloco}=1))`;
+  const formula = `OR({apartamento}='${apartment}',{apartamento}=${apartment})`;
   const params = new URLSearchParams();
   params.set('filterByFormula', formula);
-  for (const field of ['apartamento', 'bloco', 'senha']) params.append('fields[]', field);
+  for (const field of ['apartamento', 'senha']) params.append('fields[]', field);
   params.set('maxRecords', '2');
 
   const url = `https://api.airtable.com/v0/${encodeURIComponent(BASE_ID)}/${encodeURIComponent(TABLE_NAME)}?${params}`;
@@ -137,7 +136,7 @@ export default async (request) => {
       }
       const renewed = makeSession(String(current.session.apartment), current.savedPassword);
       return json(
-        { authenticated: true, apartment: current.session.apartment, block: '1' },
+        { authenticated: true, apartment: current.session.apartment },
         200,
         { 'set-cookie': sessionCookie(renewed) },
       );
@@ -177,7 +176,7 @@ export default async (request) => {
         return json({ error: 'Apartamento ou senha incorretos.' }, 401);
       }
 
-      return json({ success: true, apartment, block: '1' }, 200, {
+      return json({ success: true, apartment }, 200, {
         'set-cookie': sessionCookie(makeSession(apartment, savedPassword)),
       });
     }
