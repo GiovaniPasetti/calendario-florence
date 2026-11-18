@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087eb5">
+  <title>Área do síndico — Florence</title>
+  <style>
+    :root { color-scheme:light; --ink:#102b3b; --muted:#607b89; --blue:#087eb5; --dark:#07547d; --line:#d6e7ee; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:22px 12px 40px; color:var(--ink); background:linear-gradient(155deg,#e7f8fc 0%,#d2f1f8 48%,#f4fcfd 100%); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    main { width:min(100%,980px); margin:0 auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; border-radius:18px; background:linear-gradient(110deg,#087eb5,#12a9cf); box-shadow:0 8px 24px #07547d24; color:white; }
+    header img { width:min(45%,230px); max-height:72px; object-fit:contain; }
+    header h1 { margin:0; font-size:clamp(1.15rem,3vw,1.55rem); text-align:right; }
+    .card { margin-top:18px; padding:20px; border:1px solid #d2e8ef; border-radius:18px; background:white; box-shadow:0 8px 28px #07547d12; }
+    h2 { margin:0 0 14px; color:var(--dark); font-size:1.12rem; }
+    .muted { color:var(--muted); font-size:.88rem; }
+    label { display:block; margin:0 0 7px; font-weight:700; font-size:.9rem; }
+    input, select { width:100%; min-height:46px; padding:10px 12px; border:1px solid #b9dce8; border-radius:10px; font:inherit; color:var(--ink); background:#fbfeff; }
+    button { border:0; border-radius:10px; padding:11px 16px; background:linear-gradient(110deg,#087eb5,#12a9cf); color:white; font:700 .95rem system-ui,sans-serif; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    .secondary { background:#fff; color:var(--dark); border:1px solid #b9dce8; }
+    .danger { padding:8px 11px; background:#fff; border:1px solid #e3c8c5; color:#963b32; white-space:nowrap; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr auto; align-items:end; gap:12px; }
+    .message { min-height:22px; margin-top:12px; font-size:.9rem; color:#9a3028; }
+    .message.success { color:#16734a; }
+    .note { margin:12px 0 0; color:var(--muted); font-size:.86rem; }
+    .items { display:grid; gap:9px; padding:0; margin:0; list-style:none; }
+    .item { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px; border:1px solid var(--line); border-radius:11px; background:#f8fcfd; }
+    .item strong { display:block; color:var(--dark); }
+    .item small { display:block; margin-top:2px; color:var(--muted); }
+    .empty { padding:16px; border-radius:10px; background:#f5fafc; color:var(--muted); text-align:center; }
+    .status { font-size:.84rem; color:var(--muted); }
+    .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; }
+    a { color:var(--dark); text-decoration:none; font-weight:650; font-size:.9rem; }
+    a:hover { text-decoration:underline; }
+    @media(max-width:650px) {
+      body { padding:12px 8px 28px; }
+      header { flex-direction:column; text-align:center; }
+      header img { width:min(100%,220px); }
+      header h1 { text-align:center; }
+      .card { padding:16px; }
+      .form-row { grid-template-columns:1fr; }
+      .form-row button { width:100%; }
+      .item { align-items:flex-start; }
+      .item button { white-space:normal; }
+      .actions { align-items:stretch; flex-direction:column; }
+      .actions button { width:100%; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/Florence1-Logo.png" alt="Florence Residence">
+    <h1>Área administrativa do síndico</h1>
+  </header>
+
+  <section class="card">
+    <h2>Nova reserva</h2>
+    <form id="createForm">
+      <div class="form-row">
+        <div>
+          <label for="apartment">Apartamento</label>
+          <select id="apartment" required>
+            <option value="">Carregando apartamentos…</option>
+          </select>
+        </div>
+        <div>
+          <label for="date">Data da reserva</label>
+          <input id="date" type="date" required>
+        </div>
+        <button id="createButton" type="submit">Criar reserva</button>
+      </div>
+    </form>
+    <p class="note">O síndico pode criar várias reservas para o mesmo apartamento. Cada data do salão, porém, só pode ter uma reserva.</p>
+    <div id="createMessage" class="message" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Todas as reservas</h2>
+    <p class="muted">É possível excluir reservas de qualquer apartamento, inclusive de datas passadas.</p>
+    <div id="reservationCount" class="status"></div>
+    <div id="reservationList" class="empty">Carregando reservas…</div>
+  </section>
+
+  <section class="card">
+    <h2>Senhas dos moradores</h2>
+    <p class="muted">Ao redefinir, a senha volta ao padrão e as sessões abertas daquele apartamento deixam de funcionar. O morador criará uma nova senha no próximo acesso.</p>
+    <div id="residentList" class="empty">Carregando apartamentos…</div>
+    <div id="residentMessage" class="message" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="actions">
+    <a href="/">← Voltar ao calendário público</a>
+    <button class="secondary" id="logoutButton" type="button">Sair da área administrativa</button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const endpoint = '/.netlify/functions/sindico';
+  const authEndpoint = '/.netlify/functions/autenticacao';
+  const reservationList = document.getElementById('reservationList');
+  const residentList = document.getElementById('residentList');
+  const apartmentSelect = document.getElementById('apartment');
+  const dateInput = document.getElementById('date');
+  const createButton = document.getElementById('createButton');
+  const createMessage = document.getElementById('createMessage');
+  const residentMessage = document.getElementById('residentMessage');
+
+  const now = new Date();
+  const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  dateInput.min = localToday;
+
+  function setMessage(element, message, success) {
+    element.textContent = message || '';
+    element.className = 'message' + (success ? ' success' : '');
+  }
+  function apartmentName(value) {
+    return String(value) === '1000' ? 'Condomínio (AP 1000)' : 'AP ' + value;
+  }
+  function formatDate(value) {
+    const parts = value.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('pt-BR', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+  }
+  async function request(url, options) {
+    const response = await fetch(url, Object.assign({ cache: 'no-store' }, options || {}));
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      location.replace('/login.html');
+      throw new Error('Sessão encerrada. Faça login novamente.');
+    }
+    if (!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
+    return data;
+  }
+  function renderApartmentOptions(residents) {
+    apartmentSelect.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecione o apartamento';
+    apartmentSelect.appendChild(placeholder);
+    residents.forEach(resident => {
+      const option = document.createElement('option');
+      option.value = resident.apartment;
+      option.textContent = apartmentName(resident.apartment);
+      apartmentSelect.appendChild(option);
+    });
+  }
+  function renderReservations(records) {
+    document.getElementById('reservationCount').textContent = records.length + ' reserva(s) cadastrada(s)';
+    if (!records.length) {
+      reservationList.className = 'empty';
+      reservationList.textContent = 'Não há reservas cadastradas.';
+      return;
+    }
+    reservationList.className = '';
+    const ul = document.createElement('ul');
+    ul.className = 'items';
+    records.forEach(record => {
+      const li = document.createElement('li');
+      li.className = 'item';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = formatDate(record.date);
+      const detail = document.createElement('small');
+      detail.textContent = apartmentName(record.apartment);
+      info.append(title, detail);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'danger';
+      button.textContent = 'Excluir reserva';
+      button.addEventListener('click', async () => {
+        if (!confirm('Excluir a reserva de ' + apartmentName(record.apartment) + ' em ' + formatDate(record.date) + '?')) return;
+        button.disabled = true;
+        try {
+          await request(endpoint, {
+            method: 'DELETE',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ recordId: record.id }),
+          });
+          setMessage(createMessage, 'Reserva excluída.', true);
+          await load();
+        } catch (error) {
+          setMessage(createMessage, error.message, false);
+          button.disabled = false;
+        }
+      });
+      li.append(info, button);
+      ul.appendChild(li);
+    });
+    reservationList.replaceChildren(ul);
+  }
+  function renderResidents(residents) {
+    if (!residents.length) {
+      residentList.className = 'empty';
+      residentList.textContent = 'Nenhum apartamento encontrado.';
+      return;
+    }
+    residentList.className = '';
+    const ul = document.createElement('ul');
+    ul.className = 'items';
+    residents.forEach(resident => {
+      const li = document.createElement('li');
+      li.className = 'item';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = apartmentName(resident.apartment);
+      const detail = document.createElement('small');
+      detail.textContent = resident.passwordReset ? 'Aguardando cadastro de nova senha' : 'Senha pessoal cadastrada';
+      info.append(title, detail);
+      li.appendChild(info);
+      if (resident.apartment !== '1000') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'danger';
+        button.textContent = resident.passwordReset ? 'Já está redefinida' : 'Redefinir senha';
+        button.disabled = resident.passwordReset;
+        button.addEventListener('click', async () => {
+          if (!confirm('Redefinir a senha do ' + apartmentName(resident.apartment) + '? A senha atual será substituída pela senha padrão e as sessões abertas serão invalidadas.')) return;
+          button.disabled = true;
+          try {
+            await request(endpoint, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ action: 'resetPassword', apartment: resident.apartment }),
+            });
+            setMessage(residentMessage, 'Senha do ' + apartmentName(resident.apartment) + ' redefinida. O morador deverá cadastrar uma nova senha no próximo acesso.', true);
+            await load();
+          } catch (error) {
+            setMessage(residentMessage, error.message, false);
+            button.disabled = false;
+          }
+        });
+        li.appendChild(button);
+      } else {
+        const note = document.createElement('small');
+        note.textContent = 'Conta administrativa';
+        li.appendChild(note);
+      }
+      ul.appendChild(li);
+    });
+    residentList.replaceChildren(ul);
+  }
+  async function load() {
+    try {
+      const data = await request(endpoint);
+      renderApartmentOptions(data.residents || []);
+      renderReservations(data.reservations || []);
+      renderResidents(data.residents || []);
+    } catch (error) {
+      reservationList.className = 'empty';
+      reservationList.textContent = error.message;
+      residentList.className = 'empty';
+      residentList.textContent = error.message;
+    }
+  }
+
+  document.getElementById('createForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    setMessage(createMessage, '', false);
+    createButton.disabled = true;
+    createButton.textContent = 'Salvando…';
+    try {
+      await request(endpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          apartment: apartmentSelect.value,
+          date: dateInput.value,
+        }),
+      });
+      dateInput.value = '';
+      setMessage(createMessage, 'Reserva criada com sucesso.', true);
+      await load();
+    } catch (error) {
+      setMessage(createMessage, error.message, false);
+    } finally {
+      createButton.disabled = false;
+      createButton.textContent = 'Criar reserva';
+    }
+  });
+
+  document.getElementById('logoutButton').addEventListener('click', async () => {
+    try {
+      await fetch(authEndpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' }),
+      });
+    } finally {
+      location.replace('/login.html');
+    }
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
