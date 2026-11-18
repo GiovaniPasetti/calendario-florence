@@ -34,7 +34,7 @@ function readSession(request) {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const data = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
-    if (!data.apartment || data.block !== '1' || !data.credentialTag ||
+    if (!data.apartment || !data.credentialTag ||
         data.exp < Math.floor(Date.now() / 1000)) return null;
     return data;
   } catch { return null; }
@@ -72,9 +72,8 @@ async function listAll(table, fields, formula) {
   return records;
 }
 async function findResident(apartment) {
-  const formula = "AND(OR({apartamento}='" + apartment + "',{apartamento}=" + apartment +
-    "),OR({bloco}='1',{bloco}=1))";
-  const records = await listAll(RESIDENT_TABLE, ['apartamento', 'bloco', 'senha'], formula);
+  const formula = "OR({apartamento}='" + apartment + "',{apartamento}=" + apartment + ")";
+  const records = await listAll(RESIDENT_TABLE, ['apartamento', 'senha'], formula);
   return records.length === 1 ? records[0] : null;
 }
 async function authorize(request) {
@@ -119,7 +118,7 @@ export default async request => {
     if (request.method === 'GET') {
       const results = await Promise.all([
         listAll(RESERVATION_TABLE, ['apartamento', 'data']),
-        listAll(RESIDENT_TABLE, ['apartamento', 'bloco', 'senha'], "OR({bloco}='1',{bloco}=1)"),
+        listAll(RESIDENT_TABLE, ['apartamento', 'senha']),
       ]);
       const reservations = results[0].map(record => ({
         id: record.id,
@@ -164,7 +163,7 @@ export default async request => {
           return json({ error: 'Selecione um apartamento válido para redefinir.' }, 400);
         }
         const resident = await findResident(apartment);
-        if (!resident) return json({ error: 'Apartamento não encontrado no cadastro do Bloco 1.' }, 404);
+        if (!resident) return json({ error: 'Apartamento não encontrado no cadastro.' }, 404);
         if (String(resident.fields && resident.fields.senha || '') === DEFAULT_PASSWORD) {
           return json({ success: true, alreadyReset: true });
         }
