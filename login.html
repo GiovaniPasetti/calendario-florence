@@ -35,7 +35,7 @@
   <div class="brand"><img src="Florence1-Logo.png" alt="Florence Residence"></div>
   <section class="card">
     <h1>Acesso do morador</h1>
-    <p class="subtitle">Entre com os dados do seu apartamento — Bloco 1.</p>
+    <p class="subtitle">Entre com os dados do seu apartamento.</p>
     <form id="loginForm" autocomplete="on">
       <label for="apartment">Apartamento</label>
       <input id="apartment" name="username" type="text" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="Ex.: 101" autocomplete="username" required>
@@ -61,7 +61,7 @@
   function showSession(apartment) {
     form.style.display = 'none';
     sessionBox.style.display = 'block';
-    sessionText.textContent = `Você está conectado como AP ${apartment} — Bloco 1.`;
+    sessionText.textContent = `Você está conectado como AP ${apartment}.`;
     message.textContent = 'Acesso confirmado.';
     message.className = 'message success';
   }
