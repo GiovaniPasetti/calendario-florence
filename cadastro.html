@@ -43,7 +43,7 @@
         <input id="currentPassword" type="password" autocomplete="current-password">
       </div>
       <label for="newPassword">Nova senha</label>
-      <input id="newPassword" type="password" minlength="8" maxlength="200" autocomplete="new-password" required>
+      <input id="newPassword" type="password" minlength="1" maxlength="200" autocomplete="new-password" required>
       <label for="confirmPassword">Confirme a nova senha</label>
       <input id="confirmPassword" type="password" minlength="8" maxlength="200" autocomplete="new-password" required>
       <button id="saveButton" type="submit">Salvar senha</button>
@@ -101,8 +101,8 @@
       message.textContent = 'As senhas não coincidem.';
       return;
     }
-    if (newInput.value.length < 8) {
-      message.textContent = 'A senha deve ter pelo menos 8 caracteres.';
+    if (newInput.value.length < 1) {
+      message.textContent = 'A senha deve ter pelo menos 1 caractere.';
       return;
     }
 
