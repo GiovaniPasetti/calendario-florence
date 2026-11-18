@@ -122,7 +122,7 @@
   async function load() {
     try {
       const data = await request(endpoint);
-      document.getElementById('apartmentLabel').textContent = `Conectado como AP ${data.apartment} — Bloco 1.`;
+      document.getElementById('apartmentLabel').textContent = `Conectado como AP ${data.apartment}.`;
       if (!data.records.length) {
         list.className = 'empty';
         list.textContent = 'Você ainda não possui reservas cadastradas.';
