@@ -94,7 +94,10 @@
 
   <div class="actions">
     <a href="/">← Voltar ao calendário público</a>
-    <button class="secondary" id="logoutButton" type="button">Sair da área administrativa</button>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+      <a href="/cadastro.html">Alterar minha senha</a>
+      <button class="secondary" id="logoutButton" type="button">Sair da área administrativa</button>
+    </div>
   </div>
 </main>
 
@@ -119,7 +122,7 @@
     element.className = 'message' + (success ? ' success' : '');
   }
   function apartmentName(value) {
-    return String(value) === '1000' ? 'Condomínio (AP 1000)' : 'AP ' + value;
+    return String(value) === '1000' ? 'Condomínio' : 'AP ' + value;
   }
   function formatDate(value) {
     const parts = value.split('-').map(Number);
@@ -141,7 +144,7 @@
     apartmentSelect.replaceChildren();
     const condominium = document.createElement('option');
     condominium.value = '1000';
-    condominium.textContent = 'Condomínio (AP 1000)';
+    condominium.textContent = 'Condomínio';
     apartmentSelect.appendChild(condominium);
     residents
       .filter(resident => String(resident.apartment) !== '1000')
