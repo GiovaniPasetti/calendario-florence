@@ -112,6 +112,10 @@
       location.href = '/login.html';
       throw new Error('Sua sessão expirou. Entre novamente.');
     }
+    if (response.status === 403 && data.admin) {
+      location.replace('/sindico.html');
+      throw new Error('Acesso administrativo.');
+    }
     if (!response.ok) throw new Error(data.error || 'Não foi possível concluir a operação.');
     return data;
   }
