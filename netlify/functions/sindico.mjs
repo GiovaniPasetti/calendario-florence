@@ -144,6 +144,8 @@ export default async request => {
         if (!validApartment(apartment)) return json({ error: 'Selecione um apartamento válido.' }, 400);
         if (!date) return json({ error: 'Informe uma data válida.' }, 400);
         if (date < todayKey()) return json({ error: 'Não é possível criar reserva para uma data passada.' }, 400);
+        const resident = await findResident(apartment);
+        if (!resident) return json({ error: 'Apartamento não encontrado no cadastro.' }, 404);
         const existing = await listAll(RESERVATION_TABLE, ['data'], "{data}='" + date + "'");
         if (existing.length) return json({ error: 'Essa data já está reservada. Escolha outra.' }, 409);
         const response = await fetch(url(RESERVATION_TABLE), {
