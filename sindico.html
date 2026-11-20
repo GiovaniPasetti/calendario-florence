@@ -48,8 +48,9 @@
       .form-row button { width:100%; }
       .item { align-items:flex-start; }
       .item button { white-space:normal; }
-      .actions { align-items:stretch; flex-direction:column; }
-      .actions button { width:100%; }
+      .actions { align-items:center; justify-content:center; flex-direction:row; flex-wrap:wrap; }
+      .actions > div { justify-content:center !important; }
+      .actions button { width:auto; }
     }
   </style>
 </head>
@@ -74,7 +75,7 @@
           <label for="date">Data da reserva</label>
           <input id="date" type="date" required>
         </div>
-        <button id="createButton" type="submit">Criar reserva</button>
+        <button id="createButton" type="submit">Reservar</button>
       </div>
     </form>
     <div id="createMessage" class="message" role="status" aria-live="polite"></div>
@@ -83,7 +84,7 @@
   <section class="card">
     <h2>Histórico de reservas</h2>
     <div class="list-controls">
-      <label for="reservationLimit">Quantidade:</label>
+      <label for="reservationLimit">Quantidade exibida:</label>
       <input id="reservationLimit" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="Quantidade de reservas apresentadas">
     </div>
     <div id="reservationCount" class="status"></div>
@@ -97,10 +98,10 @@
   </section>
 
   <div class="actions">
-    <a href="/">← Voltar ao calendário público</a>
+    <a href="/">← Voltar ao calendário</a>
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-      <a href="/cadastro.html">Alterar minha senha</a>
-      <button class="secondary" id="logoutButton" type="button">Sair da área administrativa</button>
+      <a href="/cadastro.html">Alterar senha</a>
+      <button class="secondary" id="logoutButton" type="button">Sair</button>
     </div>
   </div>
 </main>
@@ -163,7 +164,11 @@
   }
   function renderReservations(records) {
     const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
-    document.getElementById('reservationCount').textContent = records.length + ' reserva(s) cadastrada(s)';
+    const activeCount = records.filter(record => record.date >= localToday).length;
+    const completedCount = records.length - activeCount;
+    const activeLabel = `${activeCount} reserva${activeCount === 1 ? '' : 's'} ativa${activeCount === 1 ? '' : 's'}`;
+    const completedLabel = `${completedCount} reserva${completedCount === 1 ? '' : 's'} realizada${completedCount === 1 ? '' : 's'}`;
+    document.getElementById('reservationCount').textContent = `${activeLabel}. ${completedLabel}.`;
     if (!records.length) {
       reservationList.className = 'empty';
       reservationList.textContent = 'Não há reservas cadastradas.';
@@ -301,7 +306,7 @@
       setMessage(createMessage, error.message, false);
     } finally {
       createButton.disabled = false;
-      createButton.textContent = 'Criar reserva';
+      createButton.textContent = 'Reservar';
     }
   });
 
