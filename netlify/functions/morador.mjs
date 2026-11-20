@@ -82,6 +82,15 @@ function validDate(value) {
   return `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
 }
 
+function cancellationDeadlineKey(value) {
+  const [year, month, day] = value.split('/').map(Number);
+  const deadline = new Date(Date.UTC(year, month - 1, day - 1));
+  const y = deadline.getUTCFullYear();
+  const m = String(deadline.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(deadline.getUTCDate()).padStart(2, '0');
+  return `${y}/${m}/${d}`;
+}
+
 function airtableUrl(tableName = TABLE_NAME, path = '') {
   return `https://api.airtable.com/v0/${encodeURIComponent(BASE_ID)}/${encodeURIComponent(tableName)}${path}`;
 }
@@ -220,8 +229,17 @@ export default async (request) => {
       return json({ error: 'Você só pode cancelar reservas do seu apartamento.' }, 403, keepAlive);
     }
     const recordDate = String(record.fields?.data || '').replaceAll('-', '/');
-    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(recordDate) || recordDate < todayKey()) {
+    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(recordDate)) {
+      return json({ error: 'Data da reserva inválida.' }, 400, keepAlive);
+    }
+    const today = todayKey();
+    if (recordDate < today) {
       return json({ error: 'Não é possível cancelar uma reserva passada.' }, 400, keepAlive);
+    }
+    if (today >= cancellationDeadlineKey(recordDate)) {
+      return json({
+        error: 'O prazo para cancelar esta reserva terminou. O cancelamento deve ser feito até 23h59 de dois dias antes da reserva.'
+      }, 400, keepAlive);
     }
 
     const deleteResponse = await fetch(airtableUrl(TABLE_NAME, `/${encodeURIComponent(recordId)}`), {
