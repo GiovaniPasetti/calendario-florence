@@ -115,6 +115,12 @@
     const [year, month, day] = value.split('-').map(Number);
     return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
   }
+  function canCancel(recordDate) {
+    const [year, month, day] = recordDate.split('-').map(Number);
+    const deadline = new Date(Date.UTC(year, month - 1, day - 1));
+    const deadlineKey = `${deadline.getUTCFullYear()}-${String(deadline.getUTCMonth() + 1).padStart(2, '0')}-${String(deadline.getUTCDate()).padStart(2, '0')}`;
+    return recordDate >= localToday && localToday < deadlineKey;
+  }
   async function request(url, options = {}) {
     const response = await fetch(url, { cache:'no-store', ...options });
     const data = await response.json().catch(() => ({}));
@@ -162,8 +168,14 @@
         note.className = 'muted';
         note.textContent = record.date < localToday ? 'Reserva realizada' : 'Reserva futura';
         info.append(strong, note);
+        if (record.date >= localToday && !canCancel(record.date)) {
+          const deadlineNote = document.createElement('div');
+          deadlineNote.className = 'muted';
+          deadlineNote.textContent = 'Prazo para cancelamento encerrado';
+          info.appendChild(deadlineNote);
+        }
         li.appendChild(info);
-        if (record.date >= localToday) {
+        if (canCancel(record.date)) {
           const cancel = document.createElement('button');
           cancel.type = 'button';
           cancel.className = 'cancel';
