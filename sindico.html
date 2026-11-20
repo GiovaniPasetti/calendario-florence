@@ -31,6 +31,9 @@
     .item strong { display:block; color:var(--dark); }
     .item small { display:block; margin-top:2px; color:var(--muted); }
     .empty { padding:16px; border-radius:10px; background:#f5fafc; color:var(--muted); text-align:center; }
+    .list-controls { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin:0 0 12px; }
+    .list-controls label { margin:0; }
+    .list-controls input { width:92px; min-height:38px; padding:6px 9px; }
     .status { font-size:.84rem; color:var(--muted); }
     .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; }
     a { color:var(--dark); text-decoration:none; font-weight:650; font-size:.9rem; }
@@ -78,7 +81,11 @@
   </section>
 
   <section class="card">
-    <h2>Todas as reservas</h2>
+    <h2>Histórico de reservas</h2>
+    <div class="list-controls">
+      <label for="reservationLimit">Quantidade:</label>
+      <input id="reservationLimit" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="Quantidade de reservas apresentadas">
+    </div>
     <div id="reservationCount" class="status"></div>
     <div id="reservationList" class="empty">Carregando reservas…</div>
   </section>
@@ -106,6 +113,7 @@
   const residentList = document.getElementById('residentList');
   const apartmentSelect = document.getElementById('apartment');
   const dateInput = document.getElementById('date');
+  const reservationLimit = document.getElementById('reservationLimit');
   const createButton = document.getElementById('createButton');
   const createMessage = document.getElementById('createMessage');
   const residentMessage = document.getElementById('residentMessage');
@@ -154,6 +162,7 @@
     apartmentSelect.value = '1000';
   }
   function renderReservations(records) {
+    const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
     document.getElementById('reservationCount').textContent = records.length + ' reserva(s) cadastrada(s)';
     if (!records.length) {
       reservationList.className = 'empty';
@@ -163,7 +172,8 @@
     reservationList.className = '';
     const ul = document.createElement('ul');
     ul.className = 'items';
-    records.forEach(record => {
+    const limit = Math.max(1, Number.parseInt(reservationLimit.value, 10) || 10);
+    sortedRecords.slice(0, limit).forEach(record => {
       const li = document.createElement('li');
       li.className = 'item';
       const info = document.createElement('div');
@@ -248,11 +258,18 @@
     });
     residentList.replaceChildren(ul);
   }
+  reservationLimit.addEventListener('input', () => {
+    // A lista é redesenhada a partir dos dados já carregados, sem nova consulta.
+    if (lastReservations) renderReservations(lastReservations);
+  });
+  let lastReservations = [];
+
   async function load() {
     try {
       const data = await request(endpoint);
       renderApartmentOptions(data.residents || []);
-      renderReservations(data.reservations || []);
+      lastReservations = data.reservations || [];
+      renderReservations(lastReservations);
       renderResidents(data.residents || []);
     } catch (error) {
       reservationList.className = 'empty';
