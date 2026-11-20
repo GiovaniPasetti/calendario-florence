@@ -191,7 +191,7 @@ export default async (request) => {
       );
       if (apartmentReservations.length) {
         return json({
-          error: 'Seu apartamento já possui uma reserva futura. Cancele essa reserva antes de fazer outra.'
+          error: 'Seu apartamento já possui uma reserva ativa. Cancele essa reserva antes de fazer outra.'
         }, 409, keepAlive);
       }
 
