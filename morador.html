@@ -166,7 +166,7 @@
         strong.textContent = formatDate(record.date);
         const note = document.createElement('div');
         note.className = 'muted';
-        note.textContent = record.date < localToday ? 'Reserva realizada' : 'Reserva futura';
+        note.textContent = record.date < localToday ? 'Reserva realizada' : 'Reserva ativa';
         info.append(strong, note);
         if (record.date >= localToday && !canCancel(record.date)) {
           const deadlineNote = document.createElement('div');
