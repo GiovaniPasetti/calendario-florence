@@ -30,6 +30,9 @@
     .booking strong { color:var(--dark); }
     .cancel { padding:8px 11px; background:#fff; border:1px solid #cbdde4; color:#8b3028; white-space:nowrap; }
     .empty { padding:16px; border-radius:10px; background:#f5fafc; color:var(--muted); text-align:center; }
+    .list-controls { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin:0 0 12px; }
+    .list-controls label { margin:0; }
+    .list-controls input { width:92px; min-height:38px; padding:6px 9px; }
     .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; }
     .secondary { background:#fff; color:var(--dark); border:1px solid #b9dce8; }
     a { color:var(--dark); text-decoration:none; font-weight:650; font-size:.9rem; }
@@ -63,23 +66,26 @@
     <form id="reserveForm">
       <div class="form-row">
         <div>
-          <label for="date">Selecione uma data disponível</label>
+          <label for="date">Selecione uma data</label>
           <input id="date" name="date" type="date" required>
         </div>
         <button id="reserveButton" type="submit">Reservar data</button>
       </div>
     </form>
     <div class="message" id="reserveMessage" role="status" aria-live="polite"></div>
-    <p class="muted">A reserva será confirmada após o registro no sistema.</p>
   </section>
   <section class="card">
-    <h2>Reservas do meu apartamento</h2>
+    <h2>Reservas do apartamento</h2>
+    <div class="list-controls">
+      <label for="reservationLimit">Quantidade:</label>
+      <input id="reservationLimit" type="number" min="1" step="1" value="5" inputmode="numeric" aria-label="Quantidade de reservas apresentadas">
+    </div>
     <div id="bookingContainer" class="empty">Carregando reservas…</div>
   </section>
   <div class="actions">
-    <a href="/">← Voltar ao calendário público</a>
+    <a href="/">← Voltar ao calendário</a>
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end">
-      <a href="/cadastro.html">Alterar minha senha</a>
+      <a href="/cadastro.html">Alterar senha</a>
       <button class="secondary" id="logoutButton" type="button">Sair</button>
     </div>
   </div>
@@ -93,6 +99,8 @@
   const reserveButton = document.getElementById('reserveButton');
   const reserveMessage = document.getElementById('reserveMessage');
   const dateInput = document.getElementById('date');
+  const reservationLimit = document.getElementById('reservationLimit');
+  let currentRecords = [];
   const today = new Date();
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
   dateInput.min = localToday;
@@ -122,16 +130,25 @@
   async function load() {
     try {
       const data = await request(endpoint);
-      document.getElementById('apartmentLabel').textContent = `Conectado como AP ${data.apartment}.`;
-      if (!data.records.length) {
+      document.getElementById('apartmentLabel').textContent = `Apartamento ${data.apartment}`;
+      currentRecords = [...(data.records || [])].sort((a, b) => b.date.localeCompare(a.date));
+      renderBookings();
+    } catch (error) {
+      list.className = 'empty';
+      list.textContent = error.message;
+    }
+  }
+  function renderBookings() {
+      if (!currentRecords.length) {
         list.className = 'empty';
         list.textContent = 'Você ainda não possui reservas cadastradas.';
         return;
       }
+      const limit = Math.max(1, Number.parseInt(reservationLimit.value, 10) || 5);
       list.className = '';
       const ul = document.createElement('ul');
       ul.className = 'booking-list';
-      data.records.forEach(record => {
+      currentRecords.slice(0, limit).forEach(record => {
         const li = document.createElement('li');
         li.className = 'booking';
         const info = document.createElement('div');
@@ -168,11 +185,9 @@
         ul.appendChild(li);
       });
       list.replaceChildren(ul);
-    } catch (error) {
-      list.className = 'empty';
-      list.textContent = error.message;
-    }
   }
+  reservationLimit.addEventListener('change', renderBookings);
+  reservationLimit.addEventListener('input', renderBookings);
   reserveForm.addEventListener('submit', async event => {
     event.preventDefault();
     showMessage('');
