@@ -46,8 +46,9 @@
       .form-row { align-items:stretch; flex-direction:column; }
       .form-row button { width:100%; }
       .booking { align-items:flex-start; }
-      .actions { align-items:stretch; flex-direction:column; }
-      .actions button { width:100%; }
+      .actions { align-items:center; justify-content:center; flex-direction:row; flex-wrap:wrap; }
+      .actions > div { justify-content:center !important; }
+      .actions button { width:auto; }
     }
   </style>
 </head>
@@ -69,15 +70,16 @@
           <label for="date">Selecione uma data</label>
           <input id="date" name="date" type="date" required>
         </div>
-        <button id="reserveButton" type="submit">Reservar data</button>
+        <button id="reserveButton" type="submit">Reservar</button>
       </div>
     </form>
     <div class="message" id="reserveMessage" role="status" aria-live="polite"></div>
   </section>
   <section class="card">
     <h2>Reservas do apartamento</h2>
+    <div id="bookingCount" class="muted" aria-live="polite"></div>
     <div class="list-controls">
-      <label for="reservationLimit">Quantidade:</label>
+      <label for="reservationLimit">Quantidade exibida:</label>
       <input id="reservationLimit" type="number" min="1" step="1" value="5" inputmode="numeric" aria-label="Quantidade de reservas apresentadas">
     </div>
     <div id="bookingContainer" class="empty">Carregando reservas…</div>
@@ -139,6 +141,8 @@
     }
   }
   function renderBookings() {
+      const count = currentRecords.length;
+      document.getElementById('bookingCount').textContent = `${count} reserva${count === 1 ? '' : 's'} cadastrada${count === 1 ? '' : 's'}`;
       if (!currentRecords.length) {
         list.className = 'empty';
         list.textContent = 'Você ainda não possui reservas cadastradas.';
@@ -206,7 +210,7 @@
       showMessage(error.message);
     } finally {
       reserveButton.disabled = false;
-      reserveButton.textContent = 'Reservar data';
+      reserveButton.textContent = 'Reservar';
     }
   });
   document.getElementById('logoutButton').addEventListener('click', async () => {
